@@ -1,0 +1,110 @@
+{
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "about": "About",
+    "contact": "Contact",
+    "bookNow": "Book Now",
+    "whatWeDo": "What We Do",
+    "resources": "Resources",
+    "signIn": "Sign In",
+    "signUp": "Sign Up"
+  },
+  "hero": {
+    "headline": "Reserve.",
+    "subheadline": "Validate.",
+    "cta": "Succeed.",
+    "description": "A premium management ecosystem for 2B-INFOSYS. We turn resource chaos into a streamlined, automated workflow.",
+    "exploreDashboard": "Explore Dashboard"
+  },
+  "about": {
+    "title": "About the Project",
+    "subtitle": "Designed for Efficiency, Built for Impact.",
+    "quote": "As part of my PFE 2026, I developed reservi.tn to solve a real-world problem: the friction of shared infrastructure.",
+    "description": "This project focuses on the digital transformation of 2B-INFOSYS, transitioning from manual scheduling to a high-performance automated system that tracks every hall, car, and screen in real-time."
+  },
+  "mission": {
+    "title": "What We Do.",
+    "subtitle": "We provide the tools to manage your organization's physical assets through three core pillars.",
+    "step1": {
+      "title": "Conflict Resolution",
+      "description": "Our smart-engine analyzes every request. If a room or car is busy, we provide instant alternatives."
+    },
+    "step2": {
+      "title": "Hierarchical Flows",
+      "description": "Not all requests are equal. We automate approvals based on the user's role and priority levels."
+    },
+    "step3": {
+      "title": "Live Display Sync",
+      "description": "Connected to hallway screens, our system shows real-time occupancy and meeting schedules."
+    }
+  },
+  "features": {
+    "title": "The Assets We Manage.",
+    "subtitle": "The Library",
+    "viewSpecs": "View All Technical Specs",
+    "fullControl": "Full Availability Control",
+    "meetingHalls": "Meeting Halls",
+    "corporateFleet": "Corporate Fleet",
+    "projectors": "Projectors",
+    "interactiveScreens": "Interactive Screens"
+  },
+  "footer": {
+    "description": "Modernizing infrastructure management for 2B-INFOSYS. A Graduation Project (PFE) 2026.",
+    "navigation": "Navigation",
+    "connect": "Connect",
+    "legal": "Legal",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "copyright": " 2026 reservi.tn — TUNISIA",
+    "developedBy": "DEVELOPED BY [Hafsi Mohamed Kacem / Essid Melek]"
+  },
+  "signIn": {
+    "title": "Sign In",
+    "subtitle": "Sign in to your account to continue",
+    "email": "Email Address",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "signIn": "Sign In",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign Up"
+  },
+  "signUp": {
+    "title": "Sign Up",
+    "subtitle": "Create your account to get started",
+    "firstName": "First Name",
+    "firstNamePlaceholder": "Enter your first name",
+    "lastName": "Last Name",
+    "lastNamePlaceholder": "Enter your last name",
+    "department": "Department",
+    "selectDepartment": "Select your department",
+    "departments": {
+      "it": "Information Technology",
+      "hr": "Human Resources",
+      "finance": "Finance",
+      "marketing": "Marketing",
+      "sales": "Sales",
+      "operations": "Operations"
+    },
+    "jobtitle": "Job Title",
+    "jobtitlePlaceholder": "Enter your job title",
+    "email": "Email Address",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Create a password",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Confirm your password",
+    "agreeToTerms": "I agree to the",
+    "termsOfService": "Terms of Service",
+    "createAccount": "Create Account",
+    "alreadyHaveAccount": "Already have an account?",
+    "signIn": "Sign In"
+  },
+  "jobtitle": {
+    "title": "Job Title",
+    "placeholder": "Enter your job title"
+  }
+}

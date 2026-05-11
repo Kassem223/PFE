@@ -1,0 +1,110 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "services": "Services",
+    "about": "À propos",
+    "contact": "Contact",
+    "bookNow": "Réserver",
+    "whatWeDo": "Ce que nous faisons",
+    "resources": "Ressources",
+    "signIn": "Se connecter",
+    "signUp": "S'inscrire"
+  },
+  "hero": {
+    "headline": "Réservez.",
+    "subheadline": "Validez.",
+    "cta": "Réussissez.",
+    "description": "Un écosystème de gestion premium pour 2B-INFOSYS. Nous transformons le chaos des ressources en un flux de travail automatisé et rationalisé.",
+    "exploreDashboard": "Explorer le Dashboard"
+  },
+  "about": {
+    "title": "À propos du projet",
+    "subtitle": "Conçu pour l'efficacité, bâti pour l'impact.",
+    "quote": "Dans le cadre de mon PFE 2026, j'ai développé reservi.tn pour résoudre un problème réel : la friction des infrastructures partagées.",
+    "description": "Ce projet se concentre sur la transformation numérique de 2B-INFOSYS, passant d'une planification manuelle à un système automatisé haute performance qui suit chaque salle, voiture et écran en temps réel."
+  },
+  "mission": {
+    "title": "Ce que nous faisons.",
+    "subtitle": "Nous fournissons les outils pour gérer les actifs physiques de votre organisation grâce à trois piliers fondamentaux.",
+    "step1": {
+      "title": "Résolution de Conflits",
+      "description": "Notre moteur intelligent analyse chaque demande. Si une salle ou une voiture est occupée, nous fournissons instantanément des alternatives."
+    },
+    "step2": {
+      "title": "Flux Hiérarchiques",
+      "description": "Toutes les demandes ne sont pas égales. Nous automatisons les approbations en fonction du rôle de l'utilisateur et des niveaux de priorité."
+    },
+    "step3": {
+      "title": "Synchronisation Affichage en Direct",
+      "description": "Connecté aux écrans des couloirs, notre système affiche l'occupation en temps réel et les plannings de réunions."
+    }
+  },
+  "features": {
+    "title": "Les Actifs que nous Gérons.",
+    "subtitle": "La Bibliothèque",
+    "viewSpecs": "Voir toutes les Spécifications Techniques",
+    "fullControl": "Contrôle Complet de Disponibilité",
+    "meetingHalls": "Salles de Réunion",
+    "corporateFleet": "Flotte d'Entreprise",
+    "projectors": "Projecteurs",
+    "interactiveScreens": "Écrans Interactifs"
+  },
+  "footer": {
+    "description": "Modernisation de la gestion des infrastructures pour 2B-INFOSYS. Un Projet de Fin d'Études (PFE) 2026.",
+    "navigation": "Navigation",
+    "connect": "Connexion",
+    "legal": "Légal",
+    "privacy": "Confidentialité",
+    "terms": "Conditions",
+    "copyright": " 2026 reservi.tn — TUNISIE",
+    "developedBy": "DÉVELOPPÉ PAR [Hafsi Mohamed Kacem / Essid Melek]"
+  },
+  "signIn": {
+    "title": "Se Connecter",
+    "subtitle": "Connectez-vous à votre compte pour continuer",
+    "email": "Adresse Email",
+    "emailPlaceholder": "Entrez votre email",
+    "password": "Mot de passe",
+    "passwordPlaceholder": "Entrez votre mot de passe",
+    "rememberMe": "Se souvenir de moi",
+    "forgotPassword": "Mot de passe oublié?",
+    "signIn": "Se connecter",
+    "noAccount": "Pas de compte?",
+    "signUp": "S'inscrire"
+  },
+  "signUp": {
+    "title": "S'inscrire",
+    "subtitle": "Créez votre compte pour commencer",
+    "firstName": "Prénom",
+    "firstNamePlaceholder": "Entrez votre prénom",
+    "lastName": "Nom",
+    "lastNamePlaceholder": "Entrez votre nom",
+    "department": "Département",
+    "selectDepartment": "Sélectionnez votre département",
+    "departments": {
+      "it": "Technologies de l'Information",
+      "hr": "Ressources Humaines",
+      "finance": "Finance",
+      "marketing": "Marketing",
+      "sales": "Ventes",
+      "operations": "Opérations"
+    },
+    "jobtitle": "Poste",
+    "jobtitlePlaceholder": "Entrez votre poste",
+    "email": "Adresse Email",
+    "emailPlaceholder": "Entrez votre email",
+    "password": "Mot de passe",
+    "passwordPlaceholder": "Créez un mot de passe",
+    "confirmPassword": "Confirmer le Mot de passe",
+    "confirmPasswordPlaceholder": "Confirmez votre mot de passe",
+    "agreeToTerms": "J'accepte les",
+    "termsOfService": "Conditions d'Utilisation",
+    "createAccount": "Créer un Compte",
+    "alreadyHaveAccount": "Déjà un compte?",
+    "signIn": "Se connecter"
+  },
+  "jobtitle": {
+    "title": "Poste",
+    "placeholder": "Entrez votre poste"
+  }
+}

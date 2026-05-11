@@ -1,0 +1,49 @@
+# Company Information for Chatbot Knowledge Base
+
+## Victor Website
+Victor is a professional web developer and digital solutions provider. Specializes in creating modern, responsive websites and web applications using cutting-edge technologies. Offers services including:
+- Custom website development
+- Web application development
+- UI/UX design
+- Frontend and backend development
+- Mobile-responsive design
+- E-commerce solutions
+- Website maintenance and support
+
+## Main Company: 2B-INFOSYS
+2B-INFOSYS is a comprehensive IT solutions company providing technology services and digital transformation solutions. Core services include:
+- Software development
+- Web application development
+- Mobile app development
+- IT consulting
+- Cloud solutions
+- Database management
+- Network infrastructure
+- Cybersecurity solutions
+- Digital transformation
+- Technical support and maintenance
+
+## Company Values
+- Innovation and creativity
+- Customer satisfaction
+- Quality assurance
+- Timely delivery
+- Affordable pricing
+- 24/7 support
+- Cutting-edge technology
+- Professional expertise
+
+## Contact Information
+- Available for consultations
+- Project-based work
+- Long-term partnerships
+- Free initial consultation
+
+## Technologies Used
+- React, Vue.js, Angular
+- Node.js, Python, PHP
+- HTML5, CSS3, JavaScript
+- MongoDB, MySQL, PostgreSQL
+- AWS, Google Cloud, Azure
+- Docker, Kubernetes
+- Git, CI/CD pipelines
