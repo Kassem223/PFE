@@ -30,11 +30,7 @@ const additionalController = {
 
       // Send invitation email
       try {
-        // Lien direct vers la page frontend d'inscription
         const acceptUrl = `http://localhost:5173/signup?token=${token}`;
-        console.log('Sending email to:', email);
-        console.log('Accept URL:', acceptUrl);
-        
         const mailOptions = {
           from: process.env.EMAIL_USER,
           to: email,
@@ -60,25 +56,15 @@ const additionalController = {
           `
         };
         
-        console.log('Mail options:', JSON.stringify(mailOptions, null, 2));
-        
         const transporter = require('../config/email').transporter;
-        const info = await new Promise((resolve, reject) => {
+        await new Promise((resolve, reject) => {
           transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-              console.error('Email send error:', error);
-              reject(error);
-            } else {
-              console.log('Email sent successfully:', info);
-              resolve(info);
-            }
+            if (error) reject(error);
+            else resolve(info);
           });
         });
-        
-        console.log('Email sent, messageId:', info.messageId);
       } catch (emailError) {
         console.error('Error sending manager invitation email:', emailError);
-        console.error('Error stack:', emailError.stack);
       }
 
       res.status(201).json({
@@ -95,23 +81,17 @@ const additionalController = {
   async verifyInvitation(req, res) {
     try {
       const { token } = req.params;
-      
       const [rows] = await db.execute(
         'SELECT * FROM manager_invitations WHERE token = ? AND status = "pending"',
         [token]
       );
-
       if (rows.length === 0) {
         return res.status(404).json({ error: 'Invalid or expired invitation' });
       }
-
-      const invitation = rows[0];
-      
-      // Retourner les infos de l'invitation au frontend
       res.json({
         success: true,
-        email: invitation.email,
-        role: invitation.role
+        email: rows[0].email,
+        role: rows[0].role
       });
     } catch (error) {
       console.error('Error verifying invitation:', error);
@@ -121,78 +101,29 @@ const additionalController = {
 
   async registerFromInvitation(req, res) {
     try {
-      console.log('=== REGISTER FROM INVITATION ===');
-      console.log('Request body:', JSON.stringify(req.body, null, 2));
-      
-      const { token, nom, prenom, email, mdp, adresse, jobtitle, departement } = req.body;
-      
-      // Accepter soit 'password' soit 'mdp'
+      const { token, nom, prenom, mdp, adresse, jobtitle, departement } = req.body;
       const password = req.body.password || mdp;
-      
-      console.log('Parsed fields:', { token, nom, prenom, password, email, adresse, jobtitle, departement });
-      
       if (!token || !nom || !prenom || !password) {
-        console.log('Missing required fields:', { token: !!token, nom: !!nom, prenom: !!prenom, password: !!password });
-        return res.status(400).json({ error: 'Missing required fields: token, nom, prenom, password' });
+        return res.status(400).json({ error: 'Missing required fields' });
       }
-
-      // Verify invitation
       const [invitationRows] = await db.execute(
         'SELECT * FROM manager_invitations WHERE token = ? AND status = "pending"',
         [token]
       );
-
       if (invitationRows.length === 0) {
-        console.log('No invitation found for token:', token);
         return res.status(404).json({ error: 'Invalid or expired invitation' });
       }
-
       const invitation = invitationRows[0];
-      console.log('Found invitation:', invitation);
-
-      // Check if user already exists
       const existingUser = await User.getByEmail(invitation.email);
       if (existingUser) {
-        console.log('User already exists with email:', invitation.email);
         return res.status(400).json({ error: 'User already exists' });
       }
-
-      console.log('Creating user with data:', {
-        nom,
-        prenom,
-        email: invitation.email,
-        role: invitation.role,
-        adresse: adresse || null,
-        jobtitle: jobtitle || null,
-        departement: departement || null
-      });
-
-      // Create user avec tous les champs
       const userId = await User.create({
-        nom,
-        prenom,
-        email: invitation.email,
-        password,
-        role: invitation.role,
-        adresse: adresse || null,
-        jobtitle: jobtitle || null,
-        departement: departement || null
+        nom, prenom, email: invitation.email, password, role: invitation.role,
+        adresse: adresse || null, jobtitle: jobtitle || null, departement: departement || null
       });
-
-      console.log('User created with ID:', userId);
-
-      // Update invitation status
-      await db.execute(
-        'UPDATE manager_invitations SET status = "accepted" WHERE id = ?',
-        [invitation.id]
-      );
-
-      console.log('Invitation updated to accepted');
-
-      // Get the created user
+      await db.execute('UPDATE manager_invitations SET status = "accepted" WHERE id = ?', [invitation.id]);
       const newUser = await User.getById(userId);
-      console.log('Retrieved new user:', newUser);
-      
       res.status(201).json({
         success: true,
         message: 'ajout avec succes',
@@ -200,7 +131,6 @@ const additionalController = {
       });
     } catch (error) {
       console.error('Error registering from invitation:', error);
-      console.error('Error stack:', error.stack);
       res.status(500).json({ error: 'Failed to register from invitation' });
     }
   },
@@ -208,36 +138,62 @@ const additionalController = {
   async getUserNotifications(req, res) {
     try {
       const { id } = req.params;
-      
-      const [rows] = await db.execute(
+      const [notifications] = await db.execute(
         `SELECT * FROM notifications WHERE id_user = ? ORDER BY created_at DESC LIMIT 50`,
         [id]
       );
-
-      res.json(rows);
+      const [invitations] = await db.execute(
+        `SELECT id_invitation, status FROM reservation_invitations WHERE id_user = ? OR email = (SELECT email FROM users WHERE id = ?)`,
+        [id, id]
+      );
+      const invitationStatuses = {};
+      invitations.forEach(inv => {
+        invitationStatuses[String(inv.id_invitation)] = String(inv.status).toLowerCase();
+      });
+      const filteredNotifications = notifications.filter(notif => {
+        if (notif.is_read == 1 || notif.is_read === true) return false;
+        const type = String(notif.type).toLowerCase();
+        if (type !== 'reservation_invitation') return true;
+        try {
+          const data = typeof notif.data === 'string' ? JSON.parse(notif.data) : notif.data;
+          const invitationId = data?.invitation_id || data?.id_invitation || data?.id;
+          if (!invitationId) return true;
+          const status = invitationStatuses[String(invitationId)];
+          return status === 'pending';
+        } catch (e) { return true; }
+      });
+      res.json(filteredNotifications);
     } catch (error) {
       console.error('Error fetching user notifications:', error);
       res.status(500).json({ error: 'Failed to fetch notifications' });
     }
   },
 
+  async markNotificationAsRead(req, res) {
+    try {
+      const { id } = req.params;
+      const numericId = parseInt(id);
+      console.log('Marking notification as read. ID:', id);
+      const [result] = await db.execute(
+        'UPDATE notifications SET is_read = 1 WHERE id_notification = ? OR id_notification = ?',
+        [id, numericId]
+      );
+      if (result.affectedRows === 0) {
+        await db.execute('UPDATE notifications SET is_read = 1 WHERE id = ? OR id = ?', [id, numericId]);
+      }
+      res.json({ success: true, message: 'Notification marked as read' });
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      res.status(500).json({ error: 'Failed to update notification' });
+    }
+  },
+
   async healthCheck(req, res) {
     try {
-      // Test database connection
-      const [testResult] = await db.execute('SELECT 1 as test');
-      
-      res.json({
-        status: 'healthy',
-        database: 'connected',
-        timestamp: new Date().toISOString()
-      });
+      await db.execute('SELECT 1 as test');
+      res.json({ status: 'healthy', database: 'connected', timestamp: new Date().toISOString() });
     } catch (error) {
-      console.error('Health check failed:', error);
-      res.status(500).json({
-        status: 'unhealthy',
-        database: 'disconnected',
-        timestamp: new Date().toISOString()
-      });
+      res.status(500).json({ status: 'unhealthy', database: 'disconnected', timestamp: new Date().toISOString() });
     }
   }
 };

@@ -22,20 +22,49 @@ export const AccountManagement = () => {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem('user'));
-    if (userData) {
-      setUser(userData);
-      setFormData({
-        nom: userData.nom || '',
-        prenom: userData.prenom || '',
-        adresse: userData.adresse || '',
-        jobtitle: userData.jobtitle || '',
-        departement: userData.departement || '',
-        profile_image: userData.profile_picture || ''
-      });
-      setProfileImagePreview(userData.profile_picture || null);
-      setLoading(false);
-    }
+    const fetchLatestUserData = async () => {
+      try {
+        const storedUser = JSON.parse(localStorage.getItem('user'));
+        if (storedUser && storedUser.id) {
+          const response = await axios.get(`http://localhost:3000/api/users/${storedUser.id}`);
+          if (response.data) {
+            // Ensure role and email are preserved/updated from server
+            const latestUser = { ...storedUser, ...response.data };
+            localStorage.setItem('user', JSON.stringify(latestUser));
+            setUser(latestUser);
+            setFormData({
+              nom: latestUser.nom || '',
+              prenom: latestUser.prenom || '',
+              adresse: latestUser.adresse || '',
+              jobtitle: latestUser.jobtitle || '',
+              departement: latestUser.departement || '',
+              profile_image: latestUser.profile_picture || ''
+            });
+            setProfileImagePreview(latestUser.profile_picture || null);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching latest user data:', error);
+        // Fallback to local data if server fetch fails
+        const userData = JSON.parse(localStorage.getItem('user'));
+        if (userData) {
+          setUser(userData);
+          setFormData({
+            nom: userData.nom || '',
+            prenom: userData.prenom || '',
+            adresse: userData.adresse || '',
+            jobtitle: userData.jobtitle || '',
+            departement: userData.departement || '',
+            profile_image: userData.profile_picture || ''
+          });
+          setProfileImagePreview(userData.profile_picture || null);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLatestUserData();
   }, []);
 
   const handleInputChange = (e) => {
@@ -74,8 +103,8 @@ export const AccountManagement = () => {
       const updatedFormData = {
         nom: formData.nom,
         prenom: formData.prenom,
-        email: formData.email,
-        role: formData.role,
+        email: user.email,
+        role: user.role,
         departement: formData.departement,
         adresse: formData.adresse,
         jobtitle: formData.jobtitle,
@@ -88,6 +117,9 @@ export const AccountManagement = () => {
       const updatedUser = { ...user, ...updatedFormData };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);
+      
+      // Dispatch custom event to notify other components (like Sidebar)
+      window.dispatchEvent(new Event('userUpdated'));
       
       setMessage('Profil mis à jour avec succès !');
       setSelectedProfileFile(null); // Reset selected file
@@ -136,15 +168,6 @@ export const AccountManagement = () => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-            Paramètres du compte
-          </h1>
-          <p className="text-slate-600 dark:text-slate-400">
-            Gérez vos informations personnelles
-          </p>
-        </div>
 
         {/* Profile Overview */}
         <ProfileOverview 

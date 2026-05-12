@@ -121,6 +121,13 @@ const statisticsController = {
           HAVING reservation_count > 0
           ORDER BY reservation_count DESC 
           LIMIT 10
+        `,
+        // Reservations by status
+        reservationsByStatus: `
+          SELECT statut, COUNT(*) as count 
+          FROM reservations 
+          GROUP BY statut 
+          ORDER BY count DESC
         `
       };
 
@@ -188,13 +195,13 @@ const statisticsController = {
       
       const queries = {
         totalReservations: 'SELECT COUNT(*) as count FROM reservations',
-        activeReservations: 'SELECT COUNT(*) as count FROM reservations WHERE statut = "acceptée"',
-        pendingReservations: 'SELECT COUNT(*) as count FROM reservations WHERE statut = "en attente"',
+        activeReservations: 'SELECT COUNT(*) as count FROM reservations WHERE statut = "confirmée"',
+        pendingReservations: 'SELECT COUNT(*) as count FROM reservations WHERE statut = "en_attente"',
         completedReservations: 'SELECT COUNT(*) as count FROM reservations WHERE statut = "terminée"',
-        cancelledReservations: 'SELECT COUNT(*) as count FROM reservations WHERE statut = "refusée"',
+        cancelledReservations: 'SELECT COUNT(*) as count FROM reservations WHERE statut = "annulée"',
         equipementCount: 'SELECT COUNT(*) as count FROM equipements',
-        availableEquipment: 'SELECT COUNT(*) as count FROM equipements WHERE status = "disponible"',
-        maintenanceEquipment: 'SELECT COUNT(*) as count FROM equipements WHERE status = "maintenance"',
+        availableEquipment: 'SELECT COUNT(*) as count FROM equipements WHERE disponibilite = 1',
+        maintenanceEquipment: 'SELECT COUNT(*) as count FROM equipements WHERE etat = "maintenance"',
         
         reservationsByStatus: `
           SELECT statut, COUNT(*) as count 

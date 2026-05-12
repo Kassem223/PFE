@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 // Inline free time selector component
-const FreeTimeSelector = ({ dayReservations, onConfirm, onCancel }) => {
+const FreeTimeSelector = ({ dayReservations, onConfirm, onCancel, categoryType }) => {
   const [timeStart, setTimeStart] = useState('08:00');
   const [timeEnd, setTimeEnd] = useState('09:00');
   const [error, setError] = useState('');
@@ -14,29 +14,50 @@ const FreeTimeSelector = ({ dayReservations, onConfirm, onCancel }) => {
   };
 
   const validate = (start, end) => {
+    if (!start || !end) return '';
     if (toMinutes(end) <= toMinutes(start)) {
       return 'L\'heure de fin doit être après l\'heure de début.';
     }
+    
+    // Case-insensitive check for rooms (salles)
+    const isRoom = categoryType?.toLowerCase() === 'salles';
+    const buffer = isRoom ? 30 : 0;
+
     for (const r of dayReservations) {
       const rStart = toMinutes(r.time_start);
       const rEnd = toMinutes(r.time_end);
       const sMin = toMinutes(start);
       const eMin = toMinutes(end);
-      if (sMin < rEnd && eMin > rStart) {
-        return `Conflit avec une réservation existante (${r.time_start} → ${r.time_end}).`;
+      
+      // Conflict if [sMin, eMin] overlaps with [rStart - buffer, rEnd + buffer]
+      if (sMin < rEnd + buffer && eMin > rStart - buffer) {
+        if (buffer > 0) {
+          // If it's a room, provide a specific message about the 30min cleaning buffer
+          if (sMin < rEnd + buffer && sMin >= rEnd) {
+            return `Prévoyez une pause de 30 min après la réservation précédente (${r.time_start.substring(0, 5)} → ${r.time_end.substring(0, 5)}).`;
+          }
+          if (eMin > rStart - buffer && eMin <= rStart) {
+            return `Prévoyez une pause de 30 min avant la réservation suivante (${r.time_start.substring(0, 5)} → ${r.time_end.substring(0, 5)}).`;
+          }
+          return `Conflit avec une réservation existante (${r.time_start.substring(0, 5)} → ${r.time_end.substring(0, 5)}).`;
+        }
+        return `Conflit avec une réservation existante (${r.time_start.substring(0, 5)} → ${r.time_end.substring(0, 5)}).`;
       }
     }
     return '';
   };
 
+  // Validate on mount and whenever dependencies change
+  useEffect(() => {
+    setError(validate(timeStart, timeEnd));
+  }, [timeStart, timeEnd, dayReservations, categoryType]);
+
   const handleStartChange = (val) => {
     setTimeStart(val);
-    setError(validate(val, timeEnd));
   };
 
   const handleEndChange = (val) => {
     setTimeEnd(val);
-    setError(validate(timeStart, val));
   };
 
   const handleConfirm = () => {
@@ -304,6 +325,7 @@ export const ReservationCalendar = ({ equipmentId, equipmentName, onReservationC
           <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Choisir votre créneau</p>
           <FreeTimeSelector
             dayReservations={dayReservations}
+            categoryType={categoryType}
             onConfirm={(timeStart, timeEnd) => onReservationClick(selectedDate, timeStart, timeEnd)}
             onCancel={handleCancelReservation}
           />

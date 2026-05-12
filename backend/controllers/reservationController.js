@@ -20,8 +20,10 @@ const reservationController = {
       }
 
       // For rooms, check availability with 30-minute buffer
-      // Add 30 minutes buffer to start time and check existing reservations
-      const bufferedStartTime = this.addMinutesToTime(startTime, 30);
+      // A new reservation [S, E] conflicts if it overlaps with [Si-30, Ei+30]
+      // Or equivalently, if [S-30, E+30] overlaps with [Si, Ei]
+      const bufferedStartTime = reservationController.subtractMinutesFromTime(startTime, 30);
+      const bufferedEndTime = reservationController.addMinutesToTime(endTime, 30);
       
       const [existingReservations] = await connection.execute(`
         SELECT time_start, time_end 
@@ -29,12 +31,8 @@ const reservationController = {
         WHERE id_equipement = ? 
         AND date_reservation = ? 
         AND statut != 'annulée'
-        AND (
-          (time_start < ? AND time_end > ?) OR  -- Original time conflicts
-          (time_start < ? AND time_end > ?) OR  -- Buffered start conflicts
-          (time_start >= ? AND time_start < ?)   -- Start within buffered period
-        )
-      `, [roomId, date, endTime, startTime, bufferedStartTime, startTime, bufferedStartTime, endTime]);
+        AND (time_start < ? AND time_end > ?)
+      `, [roomId, date, bufferedEndTime, bufferedStartTime]);
 
       if (existingReservations.length > 0) {
         return { 
@@ -54,7 +52,24 @@ const reservationController = {
   // Helper function to add minutes to a time string
   addMinutesToTime(timeStr, minutes) {
     const [hours, mins] = timeStr.split(':').map(Number);
-    const totalMinutes = hours * 60 + mins + minutes;
+    let totalMinutes = hours * 60 + mins + minutes;
+    
+    // Cap at end of day
+    if (totalMinutes >= 24 * 60) totalMinutes = 24 * 60 - 1;
+    
+    const newHours = Math.floor(totalMinutes / 60);
+    const newMins = totalMinutes % 60;
+    return `${newHours.toString().padStart(2, '0')}:${newMins.toString().padStart(2, '0')}`;
+  },
+
+  // Helper function to subtract minutes from a time string
+  subtractMinutesFromTime(timeStr, minutes) {
+    const [hours, mins] = timeStr.split(':').map(Number);
+    let totalMinutes = hours * 60 + mins - minutes;
+    
+    // Cap at start of day
+    if (totalMinutes < 0) totalMinutes = 0;
+    
     const newHours = Math.floor(totalMinutes / 60);
     const newMins = totalMinutes % 60;
     return `${newHours.toString().padStart(2, '0')}:${newMins.toString().padStart(2, '0')}`;
@@ -97,7 +112,7 @@ const reservationController = {
 
       try {
         // Check room availability (only applies to rooms/salles)
-        const availabilityCheck = await this.checkRoomAvailability(
+        const availabilityCheck = await reservationController.checkRoomAvailability(
           connection, 
           id_equipement, 
           date_reservation, 
@@ -119,7 +134,7 @@ const reservationController = {
 
         // Create reservation with salle as container only
         const [reservationResult] = await connection.execute(
-          'INSERT INTO reservations (id_equipement, id_user, date_reservation, time_start, time_end, nombre_personnes, statut) VALUES (?, ?, ?, ?, ?, ?, "en attente")',
+          'INSERT INTO reservations (id_equipement, id_user, date_reservation, time_start, time_end, nombre_personnes, statut) VALUES (?, ?, ?, ?, ?, ?, "en_attente")',
           [id_equipement, id_user, date_reservation, time_start, time_end, nombre_personnes || 1]
         );
 
@@ -189,7 +204,7 @@ const reservationController = {
 
       try {
         // Check room availability (only applies to rooms/salles)
-        const availabilityCheck = await this.checkRoomAvailability(
+        const availabilityCheck = await reservationController.checkRoomAvailability(
           connection, 
           id_equipement, 
           date_reservation, 
@@ -211,7 +226,7 @@ const reservationController = {
 
         // Create main reservation (salle as container only)
         const [reservationResult] = await connection.execute(
-          'INSERT INTO reservations (id_equipement, id_user, date_reservation, time_start, time_end, nombre_personnes, statut) VALUES (?, ?, ?, ?, ?, ?, "en attente")',
+          'INSERT INTO reservations (id_equipement, id_user, date_reservation, time_start, time_end, nombre_personnes, statut) VALUES (?, ?, ?, ?, ?, ?, "en_attente")',
           [id_equipement, id_user, date_reservation, time_start, time_end, nombre_personnes || 1]
         );
 
@@ -425,7 +440,7 @@ const reservationController = {
         
         for (const resData of reservations) {
           const [result] = await connection.execute(
-            'INSERT INTO reservations (id_equipement, id_user, date_reservation, time_start, time_end, nombre_personnes, statut) VALUES (?, ?, ?, ?, ?, ?, "en attente")',
+            'INSERT INTO reservations (id_equipement, id_user, date_reservation, time_start, time_end, nombre_personnes, statut) VALUES (?, ?, ?, ?, ?, ?, "en_attente")',
             [resData.id_equipement, resData.id_user, resData.date_reservation, resData.time_start, resData.time_end, resData.nombre_personnes || 1]
           );
           createdReservations.push({ id: result.insertId, ...resData });
@@ -507,11 +522,10 @@ const reservationController = {
   },
 
   async respondToInvitation(req, res) {
-    try {
       const { invitationId } = req.params;
       const { response, refusal_reason } = req.body;
       
-      await Invitation.updateStatus(invitationId, response, refusal_reason);
+      await Invitation.updateResponse(invitationId, response, refusal_reason);
       
       res.json({
         success: true,

@@ -80,7 +80,7 @@ const Reservation = {
 
   async create({ id_equipement, id_user, date_reservation, time_start, time_end, nombre_personnes }) {
     const [result] = await db.execute(
-      'INSERT INTO reservations (id_equipement, id_user, date_reservation, time_start, time_end, nombre_personnes, statut) VALUES (?, ?, ?, ?, ?, ?, "en attente")',
+      'INSERT INTO reservations (id_equipement, id_user, date_reservation, time_start, time_end, nombre_personnes, statut) VALUES (?, ?, ?, ?, ?, ?, "en_attente")',
       [id_equipement, id_user, date_reservation, time_start, time_end, nombre_personnes || 1]
     );
     return result.insertId;

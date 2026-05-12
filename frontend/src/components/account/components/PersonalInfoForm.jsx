@@ -73,14 +73,18 @@ export const PersonalInfoForm = ({ formData, onInputChange, onSubmit, onCancel, 
             <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-2">
               Département
             </label>
-            <input
-              type="text"
+            <select
               name="departement"
               value={formData.departement}
               onChange={onInputChange}
-              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="IT"
-            />
+              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+              required
+            >
+              <option value="">Sélectionnez un département</option>
+              {['IT', 'RH', 'Finance', 'Marketing', 'Ventes', 'Opérations'].map(dept => (
+                <option key={dept} value={dept}>{dept}</option>
+              ))}
+            </select>
           </div>
         </div>
 

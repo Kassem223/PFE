@@ -1,0 +1,1029 @@
+◇ injected env (9) from .env // tip: ⌘ suppress logs { quiet: true }
+◇ injected env (0) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
+◇ injected env (0) from .env // tip: ⌘ enable debugging { debug: true }
+◇ injected env (0) from .env // tip: ⌘ override existing { override: true }
+Server is running on port 3000
+Database: vektor_db
+Environment: development
+Executing query: totalAccounts
+Query totalAccounts completed successfully with 1 rows
+Executing query: managerAccounts
+Query managerAccounts completed successfully with 1 rows
+Executing query: adminAccounts
+Query adminAccounts completed successfully with 1 rows
+Executing query: userAccounts
+Query userAccounts completed successfully with 1 rows
+Executing query: recentAccounts
+Query recentAccounts completed successfully with 1 rows
+Executing query: accountsByRole
+Query accountsByRole completed successfully with 3 rows
+Executing query: accountsByDepartment
+Query accountsByDepartment completed successfully with 1 rows
+Executing query: monthlyRegistrations
+Query monthlyRegistrations completed successfully with 1 rows
+Executing query: totalReservations
+Query totalReservations completed successfully with 1 rows
+Executing query: activeReservations
+Query activeReservations completed successfully with 1 rows
+Executing query: completedReservations
+Query completedReservations completed successfully with 1 rows
+Executing query: equipementCount
+Query equipementCount completed successfully with 1 rows
+Executing query: managerReservations
+Query managerReservations completed successfully with 1 rows
+Executing query: reservationsByCreatorRole
+Query reservationsByCreatorRole completed successfully with 1 rows
+Executing query: monthlyActivityByRole
+Query monthlyActivityByRole completed successfully with 1 rows
+Executing query: recentRegistrationsByRole
+Query recentRegistrationsByRole completed successfully with 3 rows
+Executing query: departmentActivity
+Query departmentActivity completed successfully with 1 rows
+Executing query: topActiveUsers
+Query topActiveUsers completed successfully with 0 rows
+Executing query: totalAccounts
+Query totalAccounts completed successfully with 1 rows
+Executing query: managerAccounts
+Query managerAccounts completed successfully with 1 rows
+Executing query: adminAccounts
+Query adminAccounts completed successfully with 1 rows
+Executing query: userAccounts
+Query userAccounts completed successfully with 1 rows
+Executing query: recentAccounts
+Query recentAccounts completed successfully with 1 rows
+Executing query: accountsByRole
+Query accountsByRole completed successfully with 3 rows
+Executing query: accountsByDepartment
+Query accountsByDepartment completed successfully with 1 rows
+Executing query: monthlyRegistrations
+Query monthlyRegistrations completed successfully with 1 rows
+Executing query: totalReservations
+Query totalReservations completed successfully with 1 rows
+Executing query: activeReservations
+Query activeReservations completed successfully with 1 rows
+Executing query: completedReservations
+Query completedReservations completed successfully with 1 rows
+Executing query: equipementCount
+Query equipementCount completed successfully with 1 rows
+Executing query: managerReservations
+Query managerReservations completed successfully with 1 rows
+Executing query: reservationsByCreatorRole
+Query reservationsByCreatorRole completed successfully with 1 rows
+Executing query: monthlyActivityByRole
+Query monthlyActivityByRole completed successfully with 1 rows
+Executing query: recentRegistrationsByRole
+Query recentRegistrationsByRole completed successfully with 3 rows
+Executing query: departmentActivity
+Query departmentActivity completed successfully with 1 rows
+Executing query: topActiveUsers
+Query topActiveUsers completed successfully with 0 rows
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Executing query: totalAccounts
+Query totalAccounts completed successfully with 1 rows
+Executing query: managerAccounts
+Query managerAccounts completed successfully with 1 rows
+Executing query: adminAccounts
+Query adminAccounts completed successfully with 1 rows
+Executing query: userAccounts
+Query userAccounts completed successfully with 1 rows
+Executing query: recentAccounts
+Query recentAccounts completed successfully with 1 rows
+Executing query: accountsByRole
+Query accountsByRole completed successfully with 3 rows
+Executing query: accountsByDepartment
+Query accountsByDepartment completed successfully with 1 rows
+Executing query: monthlyRegistrations
+Query monthlyRegistrations completed successfully with 1 rows
+Executing query: totalReservations
+Query totalReservations completed successfully with 1 rows
+Executing query: activeReservations
+Query activeReservations completed successfully with 1 rows
+Executing query: completedReservations
+Query completedReservations completed successfully with 1 rows
+Executing query: equipementCount
+Query equipementCount completed successfully with 1 rows
+Executing query: managerReservations
+Query managerReservations completed successfully with 1 rows
+Executing query: reservationsByCreatorRole
+Query reservationsByCreatorRole completed successfully with 1 rows
+Executing query: monthlyActivityByRole
+Query monthlyActivityByRole completed successfully with 1 rows
+Executing query: recentRegistrationsByRole
+Query recentRegistrationsByRole completed successfully with 3 rows
+Executing query: departmentActivity
+Query departmentActivity completed successfully with 1 rows
+Executing query: topActiveUsers
+Query topActiveUsers completed successfully with 0 rows
+Executing query: totalAccounts
+Query totalAccounts completed successfully with 1 rows
+Executing query: managerAccounts
+Query managerAccounts completed successfully with 1 rows
+Executing query: adminAccounts
+Query adminAccounts completed successfully with 1 rows
+Executing query: userAccounts
+Query userAccounts completed successfully with 1 rows
+Executing query: recentAccounts
+Query recentAccounts completed successfully with 1 rows
+Executing query: accountsByRole
+Query accountsByRole completed successfully with 3 rows
+Executing query: accountsByDepartment
+Query accountsByDepartment completed successfully with 1 rows
+Executing query: monthlyRegistrations
+Query monthlyRegistrations completed successfully with 1 rows
+Executing query: totalReservations
+Query totalReservations completed successfully with 1 rows
+Executing query: activeReservations
+Query activeReservations completed successfully with 1 rows
+Executing query: completedReservations
+Query completedReservations completed successfully with 1 rows
+Executing query: equipementCount
+Query equipementCount completed successfully with 1 rows
+Executing query: managerReservations
+Query managerReservations completed successfully with 1 rows
+Executing query: reservationsByCreatorRole
+Query reservationsByCreatorRole completed successfully with 1 rows
+Executing query: monthlyActivityByRole
+Query monthlyActivityByRole completed successfully with 1 rows
+Executing query: recentRegistrationsByRole
+Query recentRegistrationsByRole completed successfully with 3 rows
+Executing query: departmentActivity
+Query departmentActivity completed successfully with 1 rows
+Executing query: topActiveUsers
+Query topActiveUsers completed successfully with 0 rows
+Executing query: totalAccounts
+Query totalAccounts completed successfully with 1 rows
+Executing query: managerAccounts
+Query managerAccounts completed successfully with 1 rows
+Executing query: adminAccounts
+Query adminAccounts completed successfully with 1 rows
+Executing query: userAccounts
+Query userAccounts completed successfully with 1 rows
+Executing query: recentAccounts
+Query recentAccounts completed successfully with 1 rows
+Executing query: accountsByRole
+Query accountsByRole completed successfully with 3 rows
+Executing query: accountsByDepartment
+Query accountsByDepartment completed successfully with 1 rows
+Executing query: monthlyRegistrations
+Query monthlyRegistrations completed successfully with 1 rows
+Executing query: totalReservations
+Query totalReservations completed successfully with 1 rows
+Executing query: activeReservations
+Query activeReservations completed successfully with 1 rows
+Executing query: completedReservations
+Query completedReservations completed successfully with 1 rows
+Executing query: equipementCount
+Query equipementCount completed successfully with 1 rows
+Executing query: managerReservations
+Query managerReservations completed successfully with 1 rows
+Executing query: reservationsByCreatorRole
+Query reservationsByCreatorRole completed successfully with 1 rows
+Executing query: monthlyActivityByRole
+Query monthlyActivityByRole completed successfully with 1 rows
+Executing query: recentRegistrationsByRole
+Query recentRegistrationsByRole completed successfully with 3 rows
+Executing query: departmentActivity
+Query departmentActivity completed successfully with 1 rows
+Executing query: topActiveUsers
+Query topActiveUsers completed successfully with 0 rows
+Executing query: totalAccounts
+Query totalAccounts completed successfully with 1 rows
+Executing query: managerAccounts
+Query managerAccounts completed successfully with 1 rows
+Executing query: adminAccounts
+Query adminAccounts completed successfully with 1 rows
+Executing query: userAccounts
+Query userAccounts completed successfully with 1 rows
+Executing query: recentAccounts
+Query recentAccounts completed successfully with 1 rows
+Executing query: accountsByRole
+Query accountsByRole completed successfully with 3 rows
+Executing query: accountsByDepartment
+Query accountsByDepartment completed successfully with 1 rows
+Executing query: monthlyRegistrations
+Query monthlyRegistrations completed successfully with 1 rows
+Executing query: totalReservations
+Query totalReservations completed successfully with 1 rows
+Executing query: activeReservations
+Query activeReservations completed successfully with 1 rows
+Executing query: completedReservations
+Query completedReservations completed successfully with 1 rows
+Executing query: equipementCount
+Query equipementCount completed successfully with 1 rows
+Executing query: managerReservations
+Query managerReservations completed successfully with 1 rows
+Executing query: reservationsByCreatorRole
+Query reservationsByCreatorRole completed successfully with 1 rows
+Executing query: monthlyActivityByRole
+Query monthlyActivityByRole completed successfully with 1 rows
+Executing query: recentRegistrationsByRole
+Query recentRegistrationsByRole completed successfully with 3 rows
+Executing query: departmentActivity
+Query departmentActivity completed successfully with 1 rows
+Executing query: topActiveUsers
+Query topActiveUsers completed successfully with 0 rows
+Executing query: totalAccounts
+Query totalAccounts completed successfully with 1 rows
+Executing query: managerAccounts
+Query managerAccounts completed successfully with 1 rows
+Executing query: adminAccounts
+Query adminAccounts completed successfully with 1 rows
+Executing query: userAccounts
+Query userAccounts completed successfully with 1 rows
+Executing query: recentAccounts
+Query recentAccounts completed successfully with 1 rows
+Executing query: accountsByRole
+Query accountsByRole completed successfully with 3 rows
+Executing query: accountsByDepartment
+Query accountsByDepartment completed successfully with 1 rows
+Executing query: monthlyRegistrations
+Query monthlyRegistrations completed successfully with 1 rows
+Executing query: totalReservations
+Query totalReservations completed successfully with 1 rows
+Executing query: activeReservations
+Query activeReservations completed successfully with 1 rows
+Executing query: completedReservations
+Query completedReservations completed successfully with 1 rows
+Executing query: equipementCount
+Query equipementCount completed successfully with 1 rows
+Executing query: managerReservations
+Query managerReservations completed successfully with 1 rows
+Executing query: reservationsByCreatorRole
+Query reservationsByCreatorRole completed successfully with 1 rows
+Executing query: monthlyActivityByRole
+Query monthlyActivityByRole completed successfully with 1 rows
+Executing query: recentRegistrationsByRole
+Query recentRegistrationsByRole completed successfully with 3 rows
+Executing query: departmentActivity
+Query departmentActivity completed successfully with 1 rows
+Executing query: topActiveUsers
+Query topActiveUsers completed successfully with 0 rows
+Executing query: totalAccounts
+Query totalAccounts completed successfully with 1 rows
+Executing query: managerAccounts
+Query managerAccounts completed successfully with 1 rows
+Executing query: adminAccounts
+Query adminAccounts completed successfully with 1 rows
+Executing query: userAccounts
+Query userAccounts completed successfully with 1 rows
+Executing query: recentAccounts
+Query recentAccounts completed successfully with 1 rows
+Executing query: accountsByRole
+Query accountsByRole completed successfully with 3 rows
+Executing query: accountsByDepartment
+Query accountsByDepartment completed successfully with 1 rows
+Executing query: monthlyRegistrations
+Query monthlyRegistrations completed successfully with 1 rows
+Executing query: totalReservations
+Query totalReservations completed successfully with 1 rows
+Executing query: activeReservations
+Query activeReservations completed successfully with 1 rows
+Executing query: completedReservations
+Query completedReservations completed successfully with 1 rows
+Executing query: equipementCount
+Query equipementCount completed successfully with 1 rows
+Executing query: managerReservations
+Query managerReservations completed successfully with 1 rows
+Executing query: reservationsByCreatorRole
+Query reservationsByCreatorRole completed successfully with 1 rows
+Executing query: monthlyActivityByRole
+Query monthlyActivityByRole completed successfully with 1 rows
+Executing query: recentRegistrationsByRole
+Query recentRegistrationsByRole completed successfully with 3 rows
+Executing query: departmentActivity
+Query departmentActivity completed successfully with 1 rows
+Executing query: topActiveUsers
+Query topActiveUsers completed successfully with 0 rows
+=== DEBUG EQUIPEMENTS (createWithInvitations) ===
+additional_equipments: []
+reservationId: 172
+Type de additional_equipments: object
+Longueur: 0
+Aucun équipement additionnel à insérer
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results
+Manager statistics endpoint called
+Executing manager query: totalReservations
+Manager query totalReservations completed successfully with 1 rows
+Executing manager query: activeReservations
+Manager query activeReservations completed successfully with 1 rows
+Executing manager query: pendingReservations
+Manager query pendingReservations completed successfully with 1 rows
+Executing manager query: completedReservations
+Manager query completedReservations completed successfully with 1 rows
+Executing manager query: cancelledReservations
+Manager query cancelledReservations completed successfully with 1 rows
+Executing manager query: equipementCount
+Manager query equipementCount completed successfully with 1 rows
+Executing manager query: availableEquipment
+Manager query availableEquipment completed successfully with 1 rows
+Executing manager query: maintenanceEquipment
+Manager query maintenanceEquipment completed successfully with 1 rows
+Executing manager query: reservationsByStatus
+Manager query reservationsByStatus completed successfully with 3 rows
+Executing manager query: reservationsByMonth
+Manager query reservationsByMonth completed successfully with 1 rows
+Executing manager query: equipementByStatus
+Executing manager query: recentReservations
+Manager query recentReservations completed successfully with 2 rows
+Some manager queries failed: { equipementByStatus: "Unknown column 'status' in 'field list'" }
+Manager statistics completed, returning results

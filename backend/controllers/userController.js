@@ -11,6 +11,23 @@ const userController = {
     }
   },
 
+  async getById(req, res) {
+    try {
+      const { id } = req.params;
+      const user = await User.getById(id);
+      
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      const { mdp, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error('Error fetching user by id:', error);
+      res.status(500).json({ error: 'Failed to fetch user' });
+    }
+  },
+
   async create(req, res) {
     try {
       const { nom, prenom, email, mdp, password, role, departement, adresse, jobtitle } = req.body;

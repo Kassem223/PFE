@@ -55,14 +55,13 @@ export const Accueil = () => {
     <div className="flex-1 flex flex-col bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-neutral-950 dark:to-neutral-900">
       {/* Header */}
       <header className="h-20 flex items-center justify-between px-10 border-b border-cyan-200 dark:border-neutral-800 sticky top-0 z-40 bg-white/80 dark:bg-neutral-950/80 backdrop-blur">
-        <p className="text-xs font-semibold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">Management Hub</p>
       </header>
 
       {/* Main Content */}
       <main className="p-10 max-w-7xl mx-auto w-full">
         {/* Title Section */}
         <div className="mb-16">
-          <h1 className="text-6xl font-black text-neutral-900 dark:text-white mb-2">Inventaire</h1>
+          <h1 className="text-6xl font-black text-neutral-900 dark:text-white mb-2">Effectuez votre réservation</h1>
           <p className="text-neutral-600 dark:text-neutral-400">Sélectionnez une catégorie pour voir les ressources disponibles</p>
         </div>
 

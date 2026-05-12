@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Users, TrendingUp, Calendar, Settings, UserCheck, Briefcase, Activity, Clock, Download } from 'lucide-react';
+import { Users, TrendingUp, Calendar, Settings, UserCheck, Briefcase, Activity, Clock, Download, ShieldCheck, UserCog, UserPlus, User, Package, Database, CheckCircle } from 'lucide-react';
 import { exportDashboardToPDF, exportChartToPDF } from '../../utils/pdfExport';
 
 const Analyse = () => {
@@ -43,8 +43,15 @@ const Analyse = () => {
       setError('Failed to load statistics');
     } finally {
       setLoading(false);
-      console.log('Loading set to false');
     }
+  };
+
+  const getRoleName = (role) => {
+    const roleStr = String(role).toLowerCase();
+    if (roleStr === 'admin' || roleStr === 'administrateur' || roleStr === '0') return 'Administrateur';
+    if (roleStr === 'manager' || roleStr === 'gestionnaire' || roleStr === '1') return 'Gestionnaire';
+    if (roleStr === 'user' || roleStr === 'utilisateur' || roleStr === '2') return 'Utilisateur';
+    return role;
   };
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
@@ -123,6 +130,21 @@ const Analyse = () => {
     );
   }
 
+  const getStatusName = (status) => {
+    if (status === undefined || status === null || status === '') return 'Confirmé';
+    const s = String(status).toLowerCase().trim();
+    if (s === '0' || s === 'en attente' || s === 'en_attente' || s === 'pending') return 'En attente';
+    if (s === '1' || s === 'confirmée' || s === 'acceptée' || s === 'confirmed') return 'Confirmé';
+    if (s === '2' || s === 'annulée' || s === 'refused' || s === 'cancelled') return 'Annulé';
+    if (s === 'terminée' || s === 'completed') return 'Terminé';
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
+  const statusData = (stats.reservationsByStatus || []).map(entry => ({
+    ...entry,
+    name: getStatusName(entry.statut !== undefined ? entry.statut : entry.status)
+  }));
+
   // Admin Statistics View
   if (user.role === 'administrateur' || user.role === 'admin') {
     return (
@@ -146,96 +168,50 @@ const Analyse = () => {
 
           {/* Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                  <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            {[
+              { icon: Database, color: 'blue', label: 'Nombre des comptes', value: stats.totalAccounts?.[0]?.count || 0 },
+              { icon: UserCog, color: 'green', label: 'Nombre de managers', value: stats.managerAccounts?.[0]?.count || 0 },
+              { icon: ShieldCheck, color: 'purple', label: "Nombre d'admins", value: stats.adminAccounts?.[0]?.count || 0 },
+              { icon: User, color: 'indigo', label: "Nombre d'utilisateurs", value: stats.userAccounts?.[0]?.count || 0 },
+              { icon: UserPlus, color: 'amber', label: 'Nouveaux comptes (30j)', value: stats.recentAccounts?.[0]?.count || 0 }
+            ].map((item, idx) => (
+              <div key={idx} className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between hover:shadow-md transition-shadow duration-200">
+                <div className="flex items-start justify-between gap-4">
+                  <div className={`w-12 h-12 bg-${item.color}-100 dark:bg-${item.color}-900/30 rounded-xl flex items-center justify-center flex-shrink-0`}>
+                    <item.icon className={`w-6 h-6 text-${item.color}-600 dark:text-${item.color}-400`} />
+                  </div>
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right leading-tight pt-1 min-h-[2.5rem]">
+                    {item.label}
+                  </span>
                 </div>
-                <span className="text-sm text-slate-500 dark:text-slate-400">Total</span>
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{stats.totalAccounts?.[0]?.count || 0}</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Comptes totaux</p>
-            </div>
-
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                  <UserCheck className="w-6 h-6 text-green-600 dark:text-green-400" />
+                <div className="mt-4">
+                  <h3 className="text-3xl font-black text-slate-900 dark:text-white">{item.value}</h3>
                 </div>
-                <span className="text-sm text-slate-500 dark:text-slate-400">Gestionnaires</span>
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{stats.managerAccounts?.[0]?.count || 0}</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Managers</p>
-            </div>
-
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                  <Settings className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                </div>
-                <span className="text-sm text-slate-500 dark:text-slate-400">Admins</span>
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{stats.adminAccounts?.[0]?.count || 0}</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Administrateurs</p>
-            </div>
-
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
-                  <Briefcase className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-                </div>
-                <span className="text-sm text-slate-500 dark:text-slate-400">Utilisateurs</span>
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{stats.userAccounts?.[0]?.count || 0}</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Users</p>
-            </div>
-
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-                </div>
-                <span className="text-sm text-slate-500 dark:text-slate-400">30 jours</span>
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{stats.recentAccounts?.[0]?.count || 0}</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Nouveaux comptes</p>
-            </div>
+            ))}
           </div>
 
           {/* Activity Overview */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+            {[
+              { icon: Calendar, color: 'emerald', label: 'Total des réservations', value: stats.totalReservations?.[0]?.count || 0 },
+              { icon: CheckCircle, color: 'blue', label: 'Réservations actives', value: stats.activeReservations?.[0]?.count || 0 },
+              { icon: Package, color: 'orange', label: "Nombre d'équipements", value: stats.equipementCount?.[0]?.count || 0 }
+            ].map((item, idx) => (
+              <div key={idx} className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between hover:shadow-md transition-shadow duration-200">
+                <div className="flex items-start justify-between gap-4">
+                  <div className={`w-12 h-12 bg-${item.color}-100 dark:bg-${item.color}-900/30 rounded-xl flex items-center justify-center flex-shrink-0`}>
+                    <item.icon className={`w-6 h-6 text-${item.color}-600 dark:text-${item.color}-400`} />
+                  </div>
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right leading-tight pt-1 min-h-[2.5rem]">
+                    {item.label}
+                  </span>
                 </div>
-                <span className="text-sm text-slate-500 dark:text-slate-400">Total</span>
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{stats.totalReservations?.[0]?.count || 0}</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Réservations totales</p>
-            </div>
-
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                  <Activity className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <div className="mt-4">
+                  <h3 className="text-3xl font-black text-slate-900 dark:text-white">{item.value}</h3>
                 </div>
-                <span className="text-sm text-slate-500 dark:text-slate-400">Actives</span>
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{stats.activeReservations?.[0]?.count || 0}</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Réservations actives</p>
-            </div>
-
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
-                  <Settings className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-                </div>
-                <span className="text-sm text-slate-500 dark:text-slate-400">Total</span>
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{stats.equipementCount?.[0]?.count || 0}</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Équipements</p>
-            </div>
+            ))}
           </div>
 
           {/* Charts */}
@@ -257,7 +233,10 @@ const Analyse = () => {
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
-                      data={stats.accountsByRole || []}
+                      data={(stats.accountsByRole || []).map(item => ({
+                        ...item,
+                        name: getRoleName(item.name || item.role)
+                      }))}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
@@ -266,7 +245,7 @@ const Analyse = () => {
                       fill="#8884d8"
                       dataKey="count"
                     >
-                      {stats.accountsByRole.map((entry, index) => (
+                      {(stats.accountsByRole || []).map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
@@ -293,7 +272,11 @@ const Analyse = () => {
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
-                      data={stats.reservationsByCreatorRole || []}
+                      data={(stats.reservationsByCreatorRole || []).map(item => ({
+                        ...item,
+                        count: Number(item.count),
+                        creator_role: getRoleName(item.creator_role)
+                      }))}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
@@ -302,7 +285,7 @@ const Analyse = () => {
                       fill="#8884d8"
                       dataKey="count"
                     >
-                      {stats.reservationsByCreatorRole.map((entry, index) => (
+                      {(stats.reservationsByCreatorRole || []).map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
@@ -432,49 +415,26 @@ const Analyse = () => {
 
           {/* Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                  <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            {[
+              { icon: User, color: 'blue', label: "Nombre d'utilisateurs", value: stats.userAccounts?.[0]?.count || 0 },
+              { icon: Calendar, color: 'green', label: 'Total des réservations', value: stats.totalReservations?.[0]?.count || 0 },
+              { icon: CheckCircle, color: 'amber', label: 'Réservations actives', value: stats.activeReservations?.[0]?.count || 0 },
+              { icon: Package, color: 'purple', label: "Nombre d'équipements", value: stats.equipementCount?.[0]?.count || 0 }
+            ].map((item, idx) => (
+              <div key={idx} className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between hover:shadow-md transition-shadow duration-200">
+                <div className="flex items-start justify-between gap-4">
+                  <div className={`w-12 h-12 bg-${item.color}-100 dark:bg-${item.color}-900/30 rounded-xl flex items-center justify-center flex-shrink-0`}>
+                    <item.icon className={`w-6 h-6 text-${item.color}-600 dark:text-${item.color}-400`} />
+                  </div>
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right leading-tight pt-1 min-h-[2.5rem]">
+                    {item.label}
+                  </span>
                 </div>
-                <span className="text-sm text-slate-500 dark:text-slate-400">Total</span>
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{stats.userAccounts?.[0]?.count || 0}</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Utilisateurs</p>
-            </div>
-
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-green-600 dark:text-green-400" />
+                <div className="mt-4">
+                  <h3 className="text-3xl font-black text-slate-900 dark:text-white">{item.value}</h3>
                 </div>
-                <span className="text-sm text-slate-500 dark:text-slate-400">Total</span>
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{stats.totalReservations?.[0]?.count || 0}</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Réservations</p>
-            </div>
-
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center">
-                  <Activity className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-                </div>
-                <span className="text-sm text-slate-500 dark:text-slate-400">Actives</span>
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{stats.activeReservations?.[0]?.count || 0}</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Réservations actives</p>
-            </div>
-
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                  <Settings className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                </div>
-                <span className="text-sm text-slate-500 dark:text-slate-400">Total</span>
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{stats.equipementCount?.[0]?.count || 0}</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Équipements</p>
-            </div>
+            ))}
           </div>
 
           {/* Charts */}
@@ -496,7 +456,7 @@ const Analyse = () => {
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
-                      data={stats.reservationsByStatus || []}
+                      data={statusData}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
@@ -505,7 +465,7 @@ const Analyse = () => {
                       fill="#8884d8"
                       dataKey="count"
                     >
-                      {stats.reservationsByStatus.map((entry, index) => (
+                      {statusData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>

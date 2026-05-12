@@ -6,6 +6,7 @@ router.post('/invite-manager', additionalController.inviteManager);
 router.get('/verify-invitation/:token', additionalController.verifyInvitation);
 router.post('/register-from-invitation', additionalController.registerFromInvitation);
 router.get('/users/:id/notifications', additionalController.getUserNotifications);
+router.put('/notifications/:id/read', additionalController.markNotificationAsRead);
 router.get('/health', additionalController.healthCheck);
 
 module.exports = router;
