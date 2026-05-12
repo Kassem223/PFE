@@ -522,6 +522,7 @@ const reservationController = {
   },
 
   async respondToInvitation(req, res) {
+    try {
       const { invitationId } = req.params;
       const { response, refusal_reason } = req.body;
       
