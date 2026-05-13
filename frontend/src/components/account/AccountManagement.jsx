@@ -78,8 +78,33 @@ export const AccountManagement = () => {
   const handleProfileImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Show preview immediately
+      const imageUrl = URL.createObjectURL(file);
+      setProfileImagePreview(imageUrl);
       setSelectedProfileFile(file);
-      setProfileImagePreview(URL.createObjectURL(file));
+      
+      try {
+        // Upload to Cloudinary immediately
+        const uploadedImageUrl = await uploadImageToBackend(file);
+        
+        // Update form data with uploaded URL
+        setFormData(prev => ({
+          ...prev,
+          profile_image: uploadedImageUrl
+        }));
+        
+        // Update localStorage and dispatch event immediately for live preview in sidebar
+        const updatedUser = { ...user, profile_picture: uploadedImageUrl, profile_image: uploadedImageUrl };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(updatedUser);
+        window.dispatchEvent(new Event('userUpdated'));
+        
+        // Update preview with final URL
+        setProfileImagePreview(uploadedImageUrl);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        setMessage('Erreur lors de l\'upload de l\'image');
+      }
     }
   };
 
@@ -95,8 +120,9 @@ export const AccountManagement = () => {
     try {
       let profileImageUrl = formData.profile_image;
       
-      // Upload profile image to Cloudinary if a new file is selected
-      if (selectedProfileFile) {
+      // Upload profile image to Cloudinary only if file was selected but not yet uploaded
+      // (It's already uploaded in handleProfileImageChange, so this is just a safety check)
+      if (selectedProfileFile && !profileImageUrl.startsWith('http')) {
         profileImageUrl = await uploadImageToBackend(selectedProfileFile);
       }
       

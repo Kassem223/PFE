@@ -16,6 +16,7 @@ import { ManageReservations } from './components/reservations/ManageReservations
 import { Users } from './components/users/Users'
 import Analyse from './components/analyse/Analyse'
 import { AccountManagement } from './components/account/AccountManagement'
+import NotificationsPage from './components/notifications/NotificationsPage'
 import { InvitationResponse } from './components/invitations/InvitationResponse'
 import { AdminDashboard } from './components/admin/AdminDashboard'
 import { CategoryManagement } from './components/admin/CategoryManagement'
@@ -57,6 +58,7 @@ function App() {
         <Route path="/admin/dashboard" element={<Layout><AdminDashboard /></Layout>} />
         <Route path="/admin/categories" element={<Layout><CategoryManagement /></Layout>} />
         <Route path="/account" element={<Layout><AccountManagement /></Layout>} />
+        <Route path="/notification" element={<Layout><NotificationsPage /></Layout>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
