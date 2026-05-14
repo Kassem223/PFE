@@ -374,7 +374,7 @@ export const ManageReservations = () => {
                         {getStatusText(reservation.statut)}
                       </span>
                       <span className="text-sm text-slate-500 dark:text-slate-400 font-mono">
-                        #{reservation.id_reservation}
+                        {reservation.id_reservation}
                       </span>
                     </div>
                     <div className="flex items-center gap-3">

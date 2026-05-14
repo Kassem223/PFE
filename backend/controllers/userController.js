@@ -30,7 +30,7 @@ const userController = {
 
   async create(req, res) {
     try {
-      const { nom, prenom, email, mdp, password, role, departement, adresse, jobtitle } = req.body;
+      const { nom, prenom, email, mdp, password, role, departement, adresse, jobtitle, telephone } = req.body;
       
       // Accept both 'mdp' and 'password' field names
       const pwd = mdp || password;
@@ -55,7 +55,8 @@ const userController = {
         role: role || 'user', 
         departement: departement || null,
         adresse: adresse || null,
-        jobtitle: jobtitle || null
+        jobtitle: jobtitle || null,
+        telephone: telephone || null
       });
 
       // Fetch the created user to return it
@@ -76,9 +77,12 @@ const userController = {
   async update(req, res) {
     try {
       const { id } = req.params;
-      const { nom, prenom, email, role, departement, adresse, jobtitle, profile_image } = req.body;
+      const { nom, prenom, email, role, departement, adresse, jobtitle, telephone, profile_image, profile_picture } = req.body;
       
-      const success = await User.update(id, { nom, prenom, email, role, departement, adresse, jobtitle, profile_image });
+      // Accept both field names for profile image
+      const profileImg = profile_picture || profile_image || null;
+      
+      const success = await User.update(id, { nom, prenom, email, role, departement, adresse, jobtitle, telephone, profile_image: profileImg });
 
       if (!success) {
         return res.status(404).json({ error: 'User not found' });

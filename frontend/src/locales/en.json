@@ -91,6 +91,7 @@
     },
     "jobtitle": "Job Title",
     "jobtitlePlaceholder": "Enter your job title",
+    "selectJobTitle": "Select a job title",
     "email": "Email Address",
     "emailPlaceholder": "Enter your email",
     "password": "Password",

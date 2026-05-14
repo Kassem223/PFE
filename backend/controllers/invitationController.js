@@ -1,74 +1,59 @@
-const Invitation = require('../models/Invitation');
+const InvitationSalle = require('../models/InvitationSalle');
 const db = require('../config/database');
 
 const invitationController = {
+
+  // GET /api/invitations?ids=1,2,3
   async getMultipleByIds(req, res) {
     try {
       let { ids } = req.query;
-      if (!ids) {
-        return res.status(400).json({ error: 'Missing ids parameter' });
-      }
-      if (typeof ids === 'string') {
-        ids = ids.split(',').map(id => id.trim()).filter(Boolean);
-      }
-      if (!Array.isArray(ids) || ids.length === 0) {
-        return res.status(400).json({ error: 'Invalid ids parameter' });
-      }
-      const invitations = await Invitation.getMultipleByIds(ids);
+      if (!ids) return res.status(400).json({ error: 'Missing ids parameter' });
+      if (typeof ids === 'string') ids = ids.split(',').map(s => s.trim()).filter(Boolean);
+      if (!ids.length) return res.status(400).json({ error: 'Invalid ids parameter' });
+      const invitations = await InvitationSalle.getMultipleByIds(ids);
       res.json(invitations);
-    } catch (error) {
-      console.error('Error fetching invitations:', error);
+    } catch (err) {
+      console.error('getMultipleByIds error:', err);
       res.status(500).json({ error: 'Failed to fetch invitations' });
     }
   },
 
+  // GET /api/invitations/:id
   async getByReservationId(req, res) {
     try {
       const { id } = req.params;
-      const invitations = await Invitation.getByReservationId(id);
+      const invitations = await InvitationSalle.getByReservationId(id);
       res.json(invitations);
-    } catch (error) {
-      console.error('Error fetching invitations:', error);
+    } catch (err) {
+      console.error('getByReservationId error:', err);
       res.status(500).json({ error: 'Failed to fetch invitations' });
     }
   },
 
+  // PUT /api/invitations/:id/respond
   async respond(req, res) {
     try {
       const { id } = req.params;
       const { response, refusal_reason } = req.body;
-      
-      const success = await Invitation.updateResponse(id, response, refusal_reason);
+      const ok = await InvitationSalle.updateResponse(id, response, refusal_reason);
+      if (!ok) return res.status(404).json({ error: 'Invitation not found' });
 
-      if (!success) {
-        return res.status(404).json({ error: 'Invitation not found' });
-      }
+      // Mark related notifications as read
+      db.execute(
+        `UPDATE notifications
+         SET is_read = 1
+         WHERE type = 'reservation_invitation'
+           AND (JSON_EXTRACT(data, '$.invitation_id') = ?
+             OR data LIKE ?)`,
+        [id, `%"invitation_id":${id}%`]
+      ).catch(e => console.error('Notification update error:', e.message));
 
-      // Automatically mark related notifications as read
-      try {
-        // Use a very robust query that handles JSON extraction AND raw text searching as a backup
-        await db.execute(
-          `UPDATE notifications 
-           SET is_read = 1 
-           WHERE (LOWER(type) = 'reservation_invitation')
-           AND (
-             JSON_EXTRACT(data, '$.invitation_id') = ? 
-             OR JSON_UNQUOTE(JSON_EXTRACT(data, '$.invitation_id')) = ?
-             OR data LIKE ? 
-             OR data LIKE ?
-           )`,
-          [id, id, `%"invitation_id":${id}%`, `%"invitation_id": "${id}"%`]
-        );
-      } catch (notifErr) {
-        console.error('Error marking notifications as read for invitation:', notifErr);
-      }
-
-      res.json({ success: true, message: 'Invitation response recorded successfully' });
-    } catch (error) {
-      console.error('Error responding to invitation:', error);
+      res.json({ success: true });
+    } catch (err) {
+      console.error('respond error:', err);
       res.status(500).json({ error: 'Failed to respond to invitation' });
     }
-  }
+  },
 };
 
 module.exports = invitationController;

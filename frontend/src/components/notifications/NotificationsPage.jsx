@@ -28,6 +28,7 @@ const NotificationsPage = () => {
     try {
       const response = await axios.get(`http://localhost:3000/api/users/${userId}/notifications`);
       setNotifications(response.data);
+      window.dispatchEvent(new CustomEvent('notificationsUpdated'));
     } catch (error) {
       console.error('Error fetching notifications:', error);
     }
@@ -58,6 +59,8 @@ const NotificationsPage = () => {
       setNotifications((prev) =>
         prev.filter((n) => String(n.id_notification || n.id) !== String(notificationId))
       );
+
+      window.dispatchEvent(new CustomEvent('notificationsUpdated'));
 
       setNotifStatus({
         message: response === 'accepted' ? 'Invitation acceptée !' : 'Invitation refusée',
@@ -144,7 +147,9 @@ const NotificationsPage = () => {
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="text-2xl">{getNotificationIcon(notification.type)}</span>
+                        <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-xl shadow-sm">
+                          {getNotificationIcon(notification.type)}
+                        </div>
                         <h3 className="font-bold text-slate-900 dark:text-white text-lg">{notification.title}</h3>
                         {!notification.is_read && (
                           <span className="ml-auto px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs rounded-full font-medium">
@@ -152,54 +157,81 @@ const NotificationsPage = () => {
                           </span>
                         )}
                       </div>
-                      <p className="text-slate-600 dark:text-slate-400 mb-3 text-base">{notification.message}</p>
-                      <p className="text-sm text-slate-500 dark:text-slate-500 mb-4">
-                        {new Date(notification.created_at).toLocaleDateString('fr-FR', {
-                          day: 'numeric',
-                          month: 'long',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
+                      
+                      <p className="text-slate-600 dark:text-slate-300 mb-4 text-base leading-relaxed">
+                        {notification.message}
                       </p>
 
-                      {isInvitation && (
-                        <div className="flex gap-3">
-                          <button
-                            type="button"
-                            disabled={processingNotif === notification.id_notification}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleInvitationResponse(data.invitation_id, 'accepted', notification.id_notification);
-                            }}
-                            className={`flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2 ${
-                              processingNotif === notification.id_notification ? 'opacity-70 cursor-not-allowed' : ''
-                            }`}
-                          >
-                            {processingNotif === notification.id_notification ? (
-                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            ) : (
-                              '✅ Accepter'
-                            )}
-                          </button>
-                          <button
-                            type="button"
-                            disabled={processingNotif === notification.id_notification}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleInvitationResponse(data.invitation_id, 'refused', notification.id_notification);
-                            }}
-                            className={`flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2 ${
-                              processingNotif === notification.id_notification ? 'opacity-70 cursor-not-allowed' : ''
-                            }`}
-                          >
-                            {processingNotif === notification.id_notification ? (
-                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            ) : (
-                              '❌ Refuser'
-                            )}
-                          </button>
+                      {isInvitation && data.salle_name && (
+                        <div className="mb-5 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-800 shadow-inner">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div className="flex flex-col">
+                              <span className="text-slate-500 dark:text-slate-400 mb-1 text-xs uppercase tracking-wider font-semibold">Ressource</span>
+                              <span className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
+                                <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                                {data.salle_name}
+                              </span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-slate-500 dark:text-slate-400 mb-1 text-xs uppercase tracking-wider font-semibold">Date & Heure</span>
+                              <span className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
+                                <svg className="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {new Date(data.date).toLocaleDateString('fr-FR')} • {data.time_start?.slice(0, 5)} - {data.time_end?.slice(0, 5)}
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       )}
+
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
+                          {new Date(notification.created_at).toLocaleDateString('fr-FR', {
+                            day: 'numeric',
+                            month: 'long',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+
+                        {isInvitation && (
+                          <div className="flex gap-3">
+                            <button
+                              type="button"
+                              disabled={processingNotif === notification.id_notification}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleInvitationResponse(data.invitation_id, 'refused', notification.id_notification);
+                              }}
+                              className={`px-5 py-2 bg-white dark:bg-slate-800 border-2 border-slate-200 hover:border-red-500 hover:text-red-600 dark:border-slate-700 dark:hover:border-red-500 text-slate-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 ${
+                                processingNotif === notification.id_notification ? 'opacity-70 cursor-not-allowed' : ''
+                              }`}
+                            >
+                              Refuser
+                            </button>
+                            <button
+                              type="button"
+                              disabled={processingNotif === notification.id_notification}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleInvitationResponse(data.invitation_id, 'accepted', notification.id_notification);
+                              }}
+                              className={`px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm hover:shadow-md hover:shadow-blue-500/20 transition-all duration-200 flex items-center justify-center gap-2 ${
+                                processingNotif === notification.id_notification ? 'opacity-70 cursor-not-allowed' : ''
+                              }`}
+                            >
+                              {processingNotif === notification.id_notification ? (
+                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              ) : (
+                                'Accepter'
+                              )}
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

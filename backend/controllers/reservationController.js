@@ -1,542 +1,388 @@
-const Reservation = require('../models/Reservation');
-const Invitation = require('../models/Invitation');
+const ReservationSalle    = require('../models/ReservationSalle');
+const ReservationVehicule = require('../models/ReservationVehicule');
+const InvitationSalle     = require('../models/InvitationSalle');
 const { sendInvitationEmail } = require('../config/email');
 const crypto = require('crypto');
-const db = require('../config/database');
+const db     = require('../config/database');
+const fs = require('fs');
+
+function logToFile(message) {
+  const timestamp = new Date().toISOString();
+  fs.appendFileSync('./debug.log', `[${timestamp}] ${message}\n`);
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function addMin(timeStr, minutes) {
+  const [h, m] = timeStr.split(':').map(Number);
+  let total = h * 60 + m + minutes;
+  if (total >= 1440) total = 1439;
+  if (total < 0)    total = 0;
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+}
+
+// Resolve which table a reservation lives in from its id + optional type hint.
+// Returns { table: 'salles'|'vehicules', model }
+async function resolveReservation(id, typeHint) {
+  if (typeHint === 'salles' || typeHint === 'vehicules') {
+    return typeHint;
+  }
+  // Try salles first
+  const [rs] = await db.execute('SELECT id FROM reservation_salles WHERE id = ?', [id]);
+  if (rs.length) return 'salles';
+  const [rv] = await db.execute('SELECT id FROM reservation_vehicules WHERE id = ?', [id]);
+  if (rv.length) return 'vehicules';
+  return null;
+}
+
+// ── Controller ────────────────────────────────────────────────────────────────
 
 const reservationController = {
-  // Helper function to check room availability with 30-minute buffer
-  async checkRoomAvailability(connection, roomId, date, startTime, endTime) {
-    try {
-      // First, check if the equipment is a room (salle)
-      const [roomCheck] = await connection.execute(
-        'SELECT id FROM salles WHERE id = ?',
-        [roomId]
-      );
-      
-      // If it's not a room, no availability check needed
-      if (roomCheck.length === 0) {
-        return { available: true, isRoom: false };
-      }
 
-      // For rooms, check availability with 30-minute buffer
-      // A new reservation [S, E] conflicts if it overlaps with [Si-30, Ei+30]
-      // Or equivalently, if [S-30, E+30] overlaps with [Si, Ei]
-      const bufferedStartTime = reservationController.subtractMinutesFromTime(startTime, 30);
-      const bufferedEndTime = reservationController.addMinutesToTime(endTime, 30);
-      
-      const [existingReservations] = await connection.execute(`
-        SELECT time_start, time_end 
-        FROM reservations 
-        WHERE id_equipement = ? 
-        AND date_reservation = ? 
-        AND statut != 'annulée'
-        AND (time_start < ? AND time_end > ?)
-      `, [roomId, date, bufferedEndTime, bufferedStartTime]);
-
-      if (existingReservations.length > 0) {
-        return { 
-          available: false, 
-          isRoom: true, 
-          conflictingReservations: existingReservations 
-        };
-      }
-
-      return { available: true, isRoom: true };
-    } catch (error) {
-      console.error('Error checking room availability:', error);
-      throw error;
-    }
-  },
-
-  // Helper function to add minutes to a time string
-  addMinutesToTime(timeStr, minutes) {
-    const [hours, mins] = timeStr.split(':').map(Number);
-    let totalMinutes = hours * 60 + mins + minutes;
-    
-    // Cap at end of day
-    if (totalMinutes >= 24 * 60) totalMinutes = 24 * 60 - 1;
-    
-    const newHours = Math.floor(totalMinutes / 60);
-    const newMins = totalMinutes % 60;
-    return `${newHours.toString().padStart(2, '0')}:${newMins.toString().padStart(2, '0')}`;
-  },
-
-  // Helper function to subtract minutes from a time string
-  subtractMinutesFromTime(timeStr, minutes) {
-    const [hours, mins] = timeStr.split(':').map(Number);
-    let totalMinutes = hours * 60 + mins - minutes;
-    
-    // Cap at start of day
-    if (totalMinutes < 0) totalMinutes = 0;
-    
-    const newHours = Math.floor(totalMinutes / 60);
-    const newMins = totalMinutes % 60;
-    return `${newHours.toString().padStart(2, '0')}:${newMins.toString().padStart(2, '0')}`;
-  },
-
+  // GET /api/reservations
   async getAll(req, res) {
     try {
-      const reservations = await Reservation.getAll();
-      res.json(reservations);
-    } catch (error) {
-      console.error('Error fetching reservations:', error);
+      const [salles, vehicules] = await Promise.all([
+        ReservationSalle.getAll(),
+        ReservationVehicule.getAll(),
+      ]);
+      // Merge and sort by created_at desc
+      const all = [...salles, ...vehicules].sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
+      res.json(all);
+    } catch (err) {
+      console.error('getAll error:', err);
       res.status(500).json({ error: 'Failed to fetch reservations' });
     }
   },
 
+  // GET /api/reservations/user/:userId
   async getByUserId(req, res) {
     try {
       const { userId } = req.params;
-      const reservations = await Reservation.getByUserId(userId);
-      res.json(reservations);
-    } catch (error) {
-      console.error('Error fetching user reservations:', error);
+      const [salles, vehicules] = await Promise.all([
+        ReservationSalle.getByUserId(userId),
+        ReservationVehicule.getByUserId(userId),
+      ]);
+      const all = [...salles, ...vehicules].sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
+      res.json(all);
+    } catch (err) {
+      console.error('getByUserId error:', err);
       res.status(500).json({ error: 'Failed to fetch user reservations' });
     }
   },
 
+  // POST /api/reservations
   async create(req, res) {
+    logToFile('=== create called ===');
+    logToFile(`Request body: ${JSON.stringify(req.body)}`);
+    
+    const {
+      id_equipement, id_user, date_reservation, time_start, time_end,
+      nombre_personnes, additional_equipments = [], resource_type,
+      vehicle_depart, vehicle_destination, vehicle_motif, vehicle_distance, vehicle_note,
+      note,
+    } = req.body;
+
+    if (!id_equipement || !id_user || !date_reservation || !time_start || !time_end) {
+      return res.status(400).json({ error: 'Required fields are missing' });
+    }
+
+    const conn = await db.getConnection();
     try {
-      console.log('=== REQUÊTE REÇUE DANS CREATE ===');
-      console.log('req.body:', req.body);
-      const { id_equipement, id_user, date_reservation, time_start, time_end, nombre_personnes, additional_equipments = [] } = req.body;
-      
-      if (!id_equipement || !id_user || !date_reservation || !time_start || !time_end) {
-        return res.status(400).json({ error: 'Required fields are missing' });
-      }
+      await conn.beginTransaction();
 
-      // Start transaction
-      const connection = await db.getConnection();
-      await connection.beginTransaction();
+      let reservationId;
 
-      try {
-        // Check room availability (only applies to rooms/salles)
-        const availabilityCheck = await reservationController.checkRoomAvailability(
-          connection, 
-          id_equipement, 
-          date_reservation, 
-          time_start, 
-          time_end
-        );
-
-        if (!availabilityCheck.available) {
-          await connection.rollback();
-          connection.release();
-          
-          if (availabilityCheck.isRoom) {
-            return res.status(409).json({ 
-              error: 'Room not available during selected time slot. Please note that rooms require a 30-minute buffer between reservations.',
-              conflictingReservations: availabilityCheck.conflictingReservations 
-            });
-          }
-        }
-
-        // Create reservation with salle as container only
-        const [reservationResult] = await connection.execute(
-          'INSERT INTO reservations (id_equipement, id_user, date_reservation, time_start, time_end, nombre_personnes, statut) VALUES (?, ?, ?, ?, ?, ?, "en_attente")',
-          [id_equipement, id_user, date_reservation, time_start, time_end, nombre_personnes || 1]
-        );
-
-        const reservationId = reservationResult.insertId;
-
-        // Add ONLY additional equipments to reservation_equipments table
-        // The salle itself is NOT added as an equipment
-        console.log('=== DEBUG EQUIPEMENTS (create) ===');
-        console.log('additional_equipments:', additional_equipments);
-        console.log('reservationId:', reservationId);
-        console.log('Type de additional_equipments:', typeof additional_equipments);
-        console.log('Longueur:', additional_equipments?.length);
-        
-        if (additional_equipments && additional_equipments.length > 0) {
-          for (const equipmentId of additional_equipments) {
-            console.log('Insertion équipement:', equipmentId);
-            await connection.execute(
-              'INSERT INTO reservation_equipments (id_reservation, id_equipement) VALUES (?, ?)',
-              [reservationId, equipmentId]
-            );
-            console.log('Équipement inséré avec succès');
-          }
-        } else {
-          console.log('Aucun équipement additionnel à insérer');
-        }
-
-        await connection.commit();
-
-        res.status(201).json({
-          success: true,
-          message: 'Reservation created successfully with additional equipments only',
-          reservationId
+      if (resource_type === 'vehicules') {
+        reservationId = await ReservationVehicule.create(conn, {
+          id_vehicule: id_equipement, id_user, date_reservation, time_start, time_end,
+          nombre_personnes, vehicle_depart, vehicle_destination, vehicle_motif,
+          vehicle_distance, vehicle_note,
         });
-      } catch (error) {
-        await connection.rollback();
-        throw error;
-      } finally {
-        connection.release();
+      } else {
+        // Default: salle
+        const avail = await ReservationSalle.checkAvailability(
+          conn, id_equipement, date_reservation, time_start, time_end
+        );
+        if (!avail.available) {
+          await conn.rollback();
+          conn.release();
+          return res.status(409).json({
+            error: 'Salle non disponible sur ce créneau (tampon de 30 min requis entre réservations).',
+            conflicts: avail.conflicts,
+          });
+        }
+        reservationId = await ReservationSalle.create(conn, {
+          id_salle: id_equipement, id_user, date_reservation, time_start, time_end,
+          nombre_personnes, equipment_ids: additional_equipments, note,
+        });
       }
-    } catch (error) {
-      console.error('Error creating reservation:', error);
-      res.status(500).json({ error: 'Failed to create reservation' });
+
+      await conn.commit();
+      res.status(201).json({ success: true, reservationId, resource_type: resource_type || 'salles' });
+    } catch (err) {
+      await conn.rollback();
+      logToFile(`create error: ${err.message}`);
+      logToFile(`Full stack: ${err.stack}`);
+      res.status(500).json({ error: 'Failed to create reservation', details: err.message });
+    } finally {
+      conn.release();
     }
   },
 
+  // POST /api/reservations/with-invitations  (salles only — vehicules have no invitations)
   async createWithInvitations(req, res) {
+    logToFile('=== createWithInvitations called ===');
+    logToFile(`Request body: ${JSON.stringify(req.body)}`);
+    
+    const {
+      id_equipement, id_user, date_reservation, time_start, time_end,
+      nombre_personnes, internal_users = [], external_emails = [],
+      additional_equipments = [], resource_type,
+      vehicle_depart, vehicle_destination, vehicle_motif, vehicle_distance, vehicle_note,
+      note,
+    } = req.body;
+
+    if (!id_equipement || !id_user || !date_reservation || !time_start || !time_end) {
+      return res.status(400).json({ error: 'Required fields are missing' });
+    }
+
+    const conn = await db.getConnection();
     try {
-      const { 
-        id_equipement, 
-        id_user, 
-        date_reservation, 
-        time_start, 
-        time_end, 
-        nombre_personnes,
-        internal_users = [],
-        external_emails = [],
-        additional_equipments = []
-      } = req.body;
-      
-      if (!id_equipement || !id_user || !date_reservation || !time_start || !time_end) {
-        return res.status(400).json({ error: 'Required fields are missing' });
+      await conn.beginTransaction();
+
+      let reservationId;
+      const isVehicle = resource_type === 'vehicules';
+
+      if (isVehicle) {
+        reservationId = await ReservationVehicule.create(conn, {
+          id_vehicule: id_equipement, id_user, date_reservation, time_start, time_end,
+          nombre_personnes, vehicle_depart, vehicle_destination, vehicle_motif,
+          vehicle_distance, vehicle_note,
+        });
+      } else {
+        const avail = await ReservationSalle.checkAvailability(
+          conn, id_equipement, date_reservation, time_start, time_end
+        );
+        if (!avail.available) {
+          await conn.rollback();
+          conn.release();
+          return res.status(409).json({
+            error: 'Salle non disponible sur ce créneau (tampon de 30 min requis).',
+            conflicts: avail.conflicts,
+          });
+        }
+        reservationId = await ReservationSalle.create(conn, {
+          id_salle: id_equipement, id_user, date_reservation, time_start, time_end,
+          nombre_personnes, equipment_ids: additional_equipments, note,
+        });
       }
 
-      // Start transaction
-      const connection = await db.getConnection();
-      await connection.beginTransaction();
-
-      try {
-        // Check room availability (only applies to rooms/salles)
-        const availabilityCheck = await reservationController.checkRoomAvailability(
-          connection, 
-          id_equipement, 
-          date_reservation, 
-          time_start, 
-          time_end
-        );
-
-        if (!availabilityCheck.available) {
-          await connection.rollback();
-          connection.release();
+      // Invitations only for salles
+      const emailPromises = [];
+      if (!isVehicle) {
+        // Fetch inviter info and salle info for notifications
+        let inviterName = 'Un utilisateur';
+        let salleName = 'Une salle';
+        try {
+          const [inviterRows] = await conn.execute('SELECT prenom, nom FROM users WHERE id = ?', [id_user]);
+          if (inviterRows.length > 0) inviterName = `${inviterRows[0].prenom} ${inviterRows[0].nom}`;
           
-          if (availabilityCheck.isRoom) {
-            return res.status(409).json({ 
-              error: 'Room not available during selected time slot. Please note that rooms require a 30-minute buffer between reservations.',
-              conflictingReservations: availabilityCheck.conflictingReservations 
-            });
-          }
+          const [salleRows] = await conn.execute('SELECT nom FROM salles WHERE id = ?', [id_equipement]);
+          if (salleRows.length > 0) salleName = salleRows[0].nom;
+        } catch (e) {
+          console.error('Error fetching inviter/salle info for notification:', e.message);
         }
 
-        // Create main reservation (salle as container only)
-        const [reservationResult] = await connection.execute(
-          'INSERT INTO reservations (id_equipement, id_user, date_reservation, time_start, time_end, nombre_personnes, statut) VALUES (?, ?, ?, ?, ?, ?, "en_attente")',
-          [id_equipement, id_user, date_reservation, time_start, time_end, nombre_personnes || 1]
-        );
-
-        const reservationId = reservationResult.insertId;
-
-        // Add ONLY additional equipments to reservation_equipments table
-        // The salle itself is NOT added as an equipment
-        console.log('=== DEBUG EQUIPEMENTS (createWithInvitations) ===');
-        console.log('additional_equipments:', additional_equipments);
-        console.log('reservationId:', reservationId);
-        console.log('Type de additional_equipments:', typeof additional_equipments);
-        console.log('Longueur:', additional_equipments?.length);
-        
-        if (additional_equipments && additional_equipments.length > 0) {
-          for (const equipmentId of additional_equipments) {
-            console.log('Insertion équipement:', equipmentId);
-            await connection.execute(
-              'INSERT INTO reservation_equipments (id_reservation, id_equipement) VALUES (?, ?)',
-              [reservationId, equipmentId]
-            );
-            console.log('Équipement inséré avec succès');
-          }
-        } else {
-          console.log('Aucun équipement additionnel à insérer');
-        }
-
-        // Create internal user invitations
-        for (const userId of internal_users) {
+        for (const uid of internal_users) {
+          const [rows] = await conn.execute('SELECT email, prenom FROM users WHERE id = ?', [uid]);
+          const userRow = rows[0];
+          if (!userRow) throw new Error(`User ${uid} not found`);
           const token = crypto.randomBytes(32).toString('hex');
-          // Get the user's email
-          const [userRows] = await connection.execute(
-            'SELECT email, prenom FROM users WHERE id = ?',
-            [userId]
+          const invId = await InvitationSalle.create(conn, {
+            id_reservation: reservationId, id_user: uid,
+            email: userRow.email, type: 'internal', token, invited_by: id_user,
+          });
+          emailPromises.push(
+            sendInvitationEmail(userRow.email, reservationId, invId)
+              .catch(e => console.error('Email error (internal):', e.message))
           );
-          
-          if (userRows.length === 0) {
-            throw new Error(`User with ID ${userId} not found`);
-          }
-          
-          const userEmail = userRows[0].email;
-          
-          const [invitationResult] = await connection.execute(
-            'INSERT INTO reservation_invitations (id_reservation, id_user, email, type, status, token, invited_by) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [reservationId, userId, userEmail, 'internal', 'pending', token, id_user]
-          );
-
-          // Send email invitation to internal user
-          try {
-            await sendInvitationEmail(userEmail, reservationId, invitationResult.insertId);
-          } catch (emailError) {
-            console.error('Error sending invitation email to internal user:', emailError);
-          }
-
-          // Create in-app notification for internal user
-          try {
-            await connection.execute(
-              `INSERT INTO notifications (id_user, type, title, message, data, is_read, created_at) 
-               VALUES (?, ?, ?, ?, ?, ?, NOW())`,
-              [
-                userId,
-                'reservation_invitation',
-                'Nouvelle invitation à une réservation',
-                `Vous avez été invité à une réservation. ID réservation: ${reservationId}`,
-                JSON.stringify({ reservation_id: reservationId, invitation_id: invitationResult.insertId }),
-                0
-              ]
-            );
-          } catch (notificationError) {
-            console.error('Error creating notification:', notificationError);
-          }
+          // In-app notification
+          conn.execute(
+            `INSERT INTO notifications (id_user, type, title, message, data, is_read, created_at)
+             VALUES (?, 'reservation_invitation', ?, ?, ?, 0, NOW())`,
+            [uid,
+             `Invitation de ${inviterName}`,
+             `${inviterName} vous a invité à une réservation pour la salle "${salleName}".`,
+             JSON.stringify({ 
+               reservation_id: reservationId, 
+               invitation_id: invId,
+               inviter_name: inviterName,
+               salle_name: salleName,
+               date: date_reservation,
+               time_start: time_start,
+               time_end: time_end
+             })]
+          ).catch(e => console.error('Notification error:', e.message));
         }
 
-        // Create external email invitations
         for (const email of external_emails) {
           const token = crypto.randomBytes(32).toString('hex');
-          const [invitationResult] = await connection.execute(
-            'INSERT INTO reservation_invitations (id_reservation, id_user, email, type, status, token, invited_by) VALUES (?, NULL, ?, ?, ?, ?, ?)',
-            [reservationId, email, 'external', 'pending', token, id_user]
+          const invId = await InvitationSalle.create(conn, {
+            id_reservation: reservationId, id_user: null,
+            email, type: 'external', token, invited_by: id_user,
+          });
+          emailPromises.push(
+            sendInvitationEmail(email, reservationId, invId)
+              .catch(e => console.error('Email error (external):', e.message))
           );
-
-          // Send email invitation
-          try {
-            await sendInvitationEmail(email, reservationId, invitationResult.insertId);
-          } catch (emailError) {
-            console.error('Error sending invitation email:', emailError);
-            // Continue even if email fails
-          }
         }
-
-        await connection.commit();
-
-        res.status(201).json({
-          success: true,
-          message: 'Reservation created with invitations and additional equipments',
-          reservationId
-        });
-      } catch (error) {
-        await connection.rollback();
-        throw error;
-      } finally {
-        connection.release();
       }
-    } catch (error) {
-      console.error('Error creating reservation with invitations:', error);
-      res.status(500).json({ error: 'Failed to create reservation with invitations' });
+
+      await conn.commit();
+      res.status(201).json({ success: true, reservationId, resource_type: resource_type || 'salles' });
+
+      // Fire emails after response
+      Promise.all(emailPromises).catch(e => console.error('Background email error:', e));
+    } catch (err) {
+      await conn.rollback();
+      logToFile(`createWithInvitations error: ${err.message}`);
+      logToFile(`Full stack: ${err.stack}`);
+      res.status(500).json({ error: 'Failed to create reservation with invitations', details: err.message });
+    } finally {
+      conn.release();
     }
   },
 
-  async updateStatus(req, res) {
-    try {
-      const { id } = req.params;
-      const { statut, description } = req.body;
-      
-      const success = await Reservation.updateStatus(id, statut, description);
-
-      if (!success) {
-        return res.status(404).json({ error: 'Reservation not found' });
-      }
-
-      res.json({
-        success: true,
-        message: 'Reservation status updated successfully'
-      });
-    } catch (error) {
-      console.error('Error updating reservation status:', error);
-      res.status(500).json({ error: 'Failed to update reservation status' });
-    }
-  },
-
-  async delete(req, res) {
-    try {
-      const { id } = req.params;
-      
-      const success = await Reservation.delete(id);
-
-      if (!success) {
-        return res.status(404).json({ error: 'Reservation not found' });
-      }
-
-      res.json({
-        success: true,
-        message: 'Reservation deleted successfully'
-      });
-    } catch (error) {
-      console.error('Error deleting reservation:', error);
-      res.status(500).json({ error: 'Failed to delete reservation' });
-    }
-  },
-
-  async cancel(req, res) {
-    try {
-      const { id } = req.params;
-      const { description } = req.body || {};
-      
-      const success = await Reservation.updateStatus(id, 'annulée', description);
-
-      if (!success) {
-        return res.status(404).json({ error: 'Reservation not found' });
-      }
-
-      res.json({
-        success: true,
-        message: 'Reservation cancelled successfully'
-      });
-    } catch (error) {
-      console.error('Error cancelling reservation:', error);
-      res.status(500).json({ error: 'Failed to cancel reservation' });
-    }
-  },
-
+  // GET /api/reservations/:id/details
   async getDetails(req, res) {
     try {
       const { id } = req.params;
-      const reservation = await Reservation.getById(id);
-
-      if (!reservation) {
-        return res.status(404).json({ error: 'Reservation not found' });
-      }
-
-      res.json(reservation);
-    } catch (error) {
-      console.error('Error fetching reservation details:', error);
+      const type = await resolveReservation(id);
+      if (!type) return res.status(404).json({ error: 'Reservation not found' });
+      const row = type === 'salles'
+        ? await ReservationSalle.getById(id)
+        : await ReservationVehicule.getById(id);
+      if (!row) return res.status(404).json({ error: 'Reservation not found' });
+      res.json(row);
+    } catch (err) {
+      console.error('getDetails error:', err);
       res.status(500).json({ error: 'Failed to fetch reservation details' });
     }
   },
 
+  // GET /api/reservations/:id/invitations  (salles only)
   async getInvitations(req, res) {
     try {
       const { id } = req.params;
-      const invitations = await Invitation.getByReservationId(id);
+      const invitations = await InvitationSalle.getByReservationId(id);
       res.json(invitations);
-    } catch (error) {
-      console.error('Error fetching reservation invitations:', error);
-      res.status(500).json({ error: 'Failed to fetch reservation invitations' });
+    } catch (err) {
+      console.error('getInvitations error:', err);
+      res.status(500).json({ error: 'Failed to fetch invitations' });
     }
   },
 
-  async createMulti(req, res) {
-    try {
-      const { reservations } = req.body;
-      
-      if (!reservations || !Array.isArray(reservations) || reservations.length === 0) {
-        return res.status(400).json({ error: 'Reservations array is required' });
-      }
-
-      const connection = await db.getConnection();
-      await connection.beginTransaction();
-
-      try {
-        const createdReservations = [];
-        
-        for (const resData of reservations) {
-          const [result] = await connection.execute(
-            'INSERT INTO reservations (id_equipement, id_user, date_reservation, time_start, time_end, nombre_personnes, statut) VALUES (?, ?, ?, ?, ?, ?, "en_attente")',
-            [resData.id_equipement, resData.id_user, resData.date_reservation, resData.time_start, resData.time_end, resData.nombre_personnes || 1]
-          );
-          createdReservations.push({ id: result.insertId, ...resData });
-        }
-
-        await connection.commit();
-
-        res.status(201).json({
-          success: true,
-          message: 'Multiple reservations created successfully',
-          reservations: createdReservations
-        });
-      } catch (error) {
-        await connection.rollback();
-        throw error;
-      } finally {
-        connection.release();
-      }
-    } catch (error) {
-      console.error('Error creating multiple reservations:', error);
-      res.status(500).json({ error: 'Failed to create multiple reservations' });
-    }
-  },
-
-  async addEquipment(req, res) {
-    try {
-      const { id } = req.params;
-      const { equipment_ids } = req.body;
-      
-      if (!equipment_ids || !Array.isArray(equipment_ids)) {
-        return res.status(400).json({ error: 'Equipment IDs array is required' });
-      }
-
-      const connection = await db.getConnection();
-      await connection.beginTransaction();
-
-      try {
-        for (const equipmentId of equipment_ids) {
-          await connection.execute(
-            'INSERT INTO reservation_equipments (id_reservation, id_equipement) VALUES (?, ?)',
-            [id, equipmentId]
-          );
-        }
-
-        await connection.commit();
-
-        res.json({
-          success: true,
-          message: 'Equipment added to reservation successfully'
-        });
-      } catch (error) {
-        await connection.rollback();
-        throw error;
-      } finally {
-        connection.release();
-      }
-    } catch (error) {
-      console.error('Error adding equipment to reservation:', error);
-      res.status(500).json({ error: 'Failed to add equipment to reservation' });
-    }
-  },
-
+  // GET /api/reservations/:id/equipments  (salles only — returns equipment_ids array)
   async getEquipments(req, res) {
     try {
       const { id } = req.params;
-      
-      const [equipments] = await db.execute(`
-        SELECT e.*, re.id_reservation 
-        FROM reservation_equipments re
-        JOIN equipements e ON re.id_equipement = e.id
-        WHERE re.id_reservation = ?
-      `, [id]);
-      
-      res.json(equipments);
-    } catch (error) {
-      console.error('Error fetching reservation equipments:', error);
-      res.status(500).json({ error: 'Failed to fetch reservation equipments' });
+      const [rows] = await db.execute(
+        'SELECT equipment_ids FROM reservation_salles WHERE id = ?', [id]
+      );
+      if (!rows.length) return res.json([]);
+      const ids = rows[0].equipment_ids ? JSON.parse(rows[0].equipment_ids) : [];
+      if (!ids.length) return res.json([]);
+      const placeholders = ids.map(() => '?').join(',');
+      const [equips] = await db.execute(
+        `SELECT id, nom, details, image_url FROM equipements WHERE id IN (${placeholders})`, ids
+      );
+      res.json(equips);
+    } catch (err) {
+      console.error('getEquipments error:', err);
+      res.status(500).json({ error: 'Failed to fetch equipments' });
     }
   },
 
-  async respondToInvitation(req, res) {
+  // PUT /api/reservations/:id/status
+  async updateStatus(req, res) {
     try {
-      const { invitationId } = req.params;
-      const { response, refusal_reason } = req.body;
-      
-      await Invitation.updateResponse(invitationId, response, refusal_reason);
-      
-      res.json({
-        success: true,
-        message: 'Invitation response updated successfully'
-      });
-    } catch (error) {
-      console.error('Error responding to invitation:', error);
-      res.status(500).json({ error: 'Failed to respond to invitation' });
+      const { id } = req.params;
+      const { statut } = req.body;
+      const type = await resolveReservation(id);
+      if (!type) return res.status(404).json({ error: 'Reservation not found' });
+      const ok = type === 'salles'
+        ? await ReservationSalle.updateStatus(id, statut)
+        : await ReservationVehicule.updateStatus(id, statut);
+      if (!ok) return res.status(404).json({ error: 'Reservation not found' });
+      res.json({ success: true });
+    } catch (err) {
+      console.error('updateStatus error:', err);
+      res.status(500).json({ error: 'Failed to update status' });
     }
-  }
+  },
+
+  // PUT /api/reservations/:id/cancel
+  async cancel(req, res) {
+    try {
+      const { id } = req.params;
+      const { type } = req.body;
+      console.log('Cancel request:', { id, type, body: req.body });
+      const typeToUse = type || (await resolveReservation(id));
+      console.log('Type to use:', typeToUse);
+      if (!typeToUse) {
+        console.log('Reservation not found');
+        return res.status(404).json({ error: 'Reservation not found' });
+      }
+      const ok = typeToUse === 'salles'
+        ? await ReservationSalle.updateStatus(id, 'annulée')
+        : await ReservationVehicule.updateStatus(id, 'annulée');
+      console.log('Update status result:', ok);
+      if (!ok) {
+        console.log('Failed to update status');
+        return res.status(404).json({ error: 'Reservation not found' });
+      }
+      res.json({ success: true });
+    } catch (err) {
+      console.error('cancel error:', err);
+      res.status(500).json({ error: 'Failed to cancel reservation', details: err.message });
+    }
+  },
+
+  // DELETE /api/reservations/:id
+  async delete(req, res) {
+    try {
+      const { id } = req.params;
+      const type = await resolveReservation(id);
+      if (!type) return res.status(404).json({ error: 'Reservation not found' });
+      const ok = type === 'salles'
+        ? await ReservationSalle.delete(id)
+        : await ReservationVehicule.delete(id);
+      if (!ok) return res.status(404).json({ error: 'Reservation not found' });
+      res.json({ success: true });
+    } catch (err) {
+      console.error('delete error:', err);
+      res.status(500).json({ error: 'Failed to delete reservation' });
+    }
+  },
+
+  // GET /api/reservations/invitations?ids=1,2,3  (salles invitations)
+  async getMultipleInvitations(req, res) {
+    try {
+      let { ids } = req.query;
+      if (!ids) return res.status(400).json({ error: 'Missing ids parameter' });
+      if (typeof ids === 'string') ids = ids.split(',').map(s => s.trim()).filter(Boolean);
+      const invitations = await InvitationSalle.getMultipleByIds(ids);
+      res.json(invitations);
+    } catch (err) {
+      console.error('getMultipleInvitations error:', err);
+      res.status(500).json({ error: 'Failed to fetch invitations' });
+    }
+  },
 };
 
 module.exports = reservationController;

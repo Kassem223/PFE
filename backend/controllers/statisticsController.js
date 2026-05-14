@@ -33,52 +33,66 @@ const statisticsController = {
           ORDER BY month DESC
         `,
         
-        // Reservation statistics
-        totalReservations: 'SELECT COUNT(*) as count FROM reservations',
-        activeReservations: 'SELECT COUNT(*) as count FROM reservations WHERE statut = "acceptée"',
-        completedReservations: 'SELECT COUNT(*) as count FROM reservations WHERE statut = "terminée"',
+        // Reservation statistics — union both tables
+        totalReservations: `
+          SELECT (SELECT COUNT(*) FROM reservation_salles) +
+                 (SELECT COUNT(*) FROM reservation_vehicules) AS count
+        `,
+        activeReservations: `
+          SELECT (SELECT COUNT(*) FROM reservation_salles    WHERE statut = 'confirmée') +
+                 (SELECT COUNT(*) FROM reservation_vehicules WHERE statut = 'confirmée') AS count
+        `,
+        completedReservations: `
+          SELECT (SELECT COUNT(*) FROM reservation_salles    WHERE statut = 'terminée') +
+                 (SELECT COUNT(*) FROM reservation_vehicules WHERE statut = 'terminée') AS count
+        `,
         equipementCount: 'SELECT COUNT(*) as count FROM equipements',
         
-        // Manager reservations
+        // Manager reservations — union both tables
         managerReservations: `
-          SELECT u.nom, u.prenom, COUNT(r.id_reservation) as reservation_count
-          FROM users u 
-          LEFT JOIN reservations r ON u.id = r.id_user
-          WHERE u.role = 'manager' 
-          GROUP BY u.id, u.nom, u.prenom 
-          ORDER BY reservation_count DESC 
+          SELECT u.nom, u.prenom,
+                 COUNT(r.id) AS reservation_count
+          FROM users u
+          LEFT JOIN (
+            SELECT id, id_user FROM reservation_salles
+            UNION ALL
+            SELECT id, id_user FROM reservation_vehicules
+          ) r ON u.id = r.id_user
+          WHERE u.role = 'manager'
+          GROUP BY u.id, u.nom, u.prenom
+          ORDER BY reservation_count DESC
           LIMIT 10
         `,
         
-        // Reservations by creator role
+        // Reservations by creator role — union both tables
         reservationsByCreatorRole: `
-          SELECT 
-            CASE 
-              WHEN u.role = 'administrateur' THEN 'admin'
-              WHEN u.role = 'admin' THEN 'admin'
-              ELSE u.role
-            END as creator_role,
-            COUNT(r.id_reservation) as count 
-          FROM reservations r 
-          JOIN users u ON r.id_user = u.id 
-          GROUP BY u.role 
+          SELECT
+            CASE WHEN u.role IN ('administrateur','admin') THEN 'admin' ELSE u.role END AS creator_role,
+            COUNT(r.id) AS count
+          FROM (
+            SELECT id, id_user FROM reservation_salles
+            UNION ALL
+            SELECT id, id_user FROM reservation_vehicules
+          ) r
+          JOIN users u ON r.id_user = u.id
+          GROUP BY u.role
           ORDER BY count DESC
         `,
         
-        // Monthly activity by role
+        // Monthly activity by role — union both tables
         monthlyActivityByRole: `
-          SELECT 
-            DATE_FORMAT(r.created_at, "%Y-%m") as month,
-            CASE 
-              WHEN u.role = 'administrateur' THEN 'admin'
-              WHEN u.role = 'admin' THEN 'admin'
-              ELSE u.role
-            END as role,
-            COUNT(r.id_reservation) as count
-          FROM reservations r 
-          JOIN users u ON r.id_user = u.id 
+          SELECT
+            DATE_FORMAT(r.created_at, '%Y-%m') AS month,
+            CASE WHEN u.role IN ('administrateur','admin') THEN 'admin' ELSE u.role END AS role,
+            COUNT(r.id) AS count
+          FROM (
+            SELECT id, id_user, created_at FROM reservation_salles
+            UNION ALL
+            SELECT id, id_user, created_at FROM reservation_vehicules
+          ) r
+          JOIN users u ON r.id_user = u.id
           WHERE r.created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
-          GROUP BY DATE_FORMAT(r.created_at, "%Y-%m"), u.role 
+          GROUP BY DATE_FORMAT(r.created_at, '%Y-%m'), u.role
           ORDER BY month DESC, count DESC
         `,
         
@@ -93,40 +107,50 @@ const statisticsController = {
           ORDER BY count DESC
         `,
         
-        // Department activity
+        // Department activity — union both tables
         departmentActivity: `
-          SELECT 
+          SELECT
             u.departement,
-            COUNT(DISTINCT u.id) as user_count,
-            COUNT(r.id_reservation) as reservation_count
-          FROM users u 
-          LEFT JOIN reservations r ON u.id = r.id_user 
+            COUNT(DISTINCT u.id) AS user_count,
+            COUNT(r.id)          AS reservation_count
+          FROM users u
+          LEFT JOIN (
+            SELECT id, id_user FROM reservation_salles
+            UNION ALL
+            SELECT id, id_user FROM reservation_vehicules
+          ) r ON u.id = r.id_user
           WHERE u.departement IS NOT NULL
-          GROUP BY u.departement 
+          GROUP BY u.departement
           ORDER BY reservation_count DESC
         `,
         
-        // Top active users
+        // Top active users — union both tables
         topActiveUsers: `
-          SELECT 
-            u.nom, 
-            u.prenom, 
-            u.role,
-            COUNT(r.id_reservation) as reservation_count,
-            MAX(r.created_at) as last_activity
-          FROM users u 
-          LEFT JOIN reservations r ON u.id = r.id_user 
-          WHERE u.role IN ('manager', 'admin')
-          GROUP BY u.id, u.nom, u.prenom, u.role 
+          SELECT
+            u.nom, u.prenom, u.role,
+            COUNT(r.id)          AS reservation_count,
+            MAX(r.created_at)    AS last_activity
+          FROM users u
+          LEFT JOIN (
+            SELECT id, id_user, created_at FROM reservation_salles
+            UNION ALL
+            SELECT id, id_user, created_at FROM reservation_vehicules
+          ) r ON u.id = r.id_user
+          WHERE u.role IN ('manager','admin')
+          GROUP BY u.id, u.nom, u.prenom, u.role
           HAVING reservation_count > 0
-          ORDER BY reservation_count DESC 
+          ORDER BY reservation_count DESC
           LIMIT 10
         `,
-        // Reservations by status
+        // Reservations by status — union both tables
         reservationsByStatus: `
-          SELECT statut, COUNT(*) as count 
-          FROM reservations 
-          GROUP BY statut 
+          SELECT statut, COUNT(*) AS count
+          FROM (
+            SELECT statut FROM reservation_salles
+            UNION ALL
+            SELECT statut FROM reservation_vehicules
+          ) combined
+          GROUP BY statut
           ORDER BY count DESC
         `
       };
@@ -194,27 +218,50 @@ const statisticsController = {
       console.log('Manager statistics endpoint called');
       
       const queries = {
-        totalReservations: 'SELECT COUNT(*) as count FROM reservations',
-        activeReservations: 'SELECT COUNT(*) as count FROM reservations WHERE statut = "confirmée"',
-        pendingReservations: 'SELECT COUNT(*) as count FROM reservations WHERE statut = "en_attente"',
-        completedReservations: 'SELECT COUNT(*) as count FROM reservations WHERE statut = "terminée"',
-        cancelledReservations: 'SELECT COUNT(*) as count FROM reservations WHERE statut = "annulée"',
+        totalReservations: `
+          SELECT (SELECT COUNT(*) FROM reservation_salles) +
+                 (SELECT COUNT(*) FROM reservation_vehicules) AS count
+        `,
+        activeReservations: `
+          SELECT (SELECT COUNT(*) FROM reservation_salles    WHERE statut = 'confirmée') +
+                 (SELECT COUNT(*) FROM reservation_vehicules WHERE statut = 'confirmée') AS count
+        `,
+        pendingReservations: `
+          SELECT (SELECT COUNT(*) FROM reservation_salles    WHERE statut = 'en_attente') +
+                 (SELECT COUNT(*) FROM reservation_vehicules WHERE statut = 'en_attente') AS count
+        `,
+        completedReservations: `
+          SELECT (SELECT COUNT(*) FROM reservation_salles    WHERE statut = 'terminée') +
+                 (SELECT COUNT(*) FROM reservation_vehicules WHERE statut = 'terminée') AS count
+        `,
+        cancelledReservations: `
+          SELECT (SELECT COUNT(*) FROM reservation_salles    WHERE statut = 'annulée') +
+                 (SELECT COUNT(*) FROM reservation_vehicules WHERE statut = 'annulée') AS count
+        `,
         equipementCount: 'SELECT COUNT(*) as count FROM equipements',
         availableEquipment: 'SELECT COUNT(*) as count FROM equipements WHERE disponibilite = 1',
         maintenanceEquipment: 'SELECT COUNT(*) as count FROM equipements WHERE etat = "maintenance"',
         
         reservationsByStatus: `
-          SELECT statut, COUNT(*) as count 
-          FROM reservations 
-          GROUP BY statut 
+          SELECT statut, COUNT(*) AS count
+          FROM (
+            SELECT statut FROM reservation_salles
+            UNION ALL
+            SELECT statut FROM reservation_vehicules
+          ) combined
+          GROUP BY statut
           ORDER BY count DESC
         `,
         
         reservationsByMonth: `
-          SELECT DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as count 
-          FROM reservations 
+          SELECT DATE_FORMAT(created_at, '%Y-%m') AS month, COUNT(*) AS count
+          FROM (
+            SELECT created_at FROM reservation_salles
+            UNION ALL
+            SELECT created_at FROM reservation_vehicules
+          ) combined
           WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
-          GROUP BY DATE_FORMAT(created_at, "%Y-%m") 
+          GROUP BY DATE_FORMAT(created_at, '%Y-%m')
           ORDER BY month DESC
         `,
         
@@ -226,12 +273,25 @@ const statisticsController = {
         `,
         
         recentReservations: `
-          SELECT r.*, u.prenom, u.nom, e.nom as equipement_nom
-          FROM reservations r
-          JOIN users u ON r.id_user = u.id
-          JOIN equipements e ON r.id_equipement = e.id
-          ORDER BY r.created_at DESC
-          LIMIT 10
+          SELECT r.id AS id_reservation, r.id_user, r.date_reservation,
+                 r.time_start, r.time_end, r.statut, r.created_at,
+                 u.prenom, u.nom,
+                 s.nom AS equipement_nom,
+                 'salles' AS resource_type
+          FROM   reservation_salles r
+          JOIN   users  u ON r.id_user  = u.id
+          JOIN   salles s ON r.id_salle = s.id
+          UNION ALL
+          SELECT r.id, r.id_user, r.date_reservation,
+                 r.time_start, r.time_end, r.statut, r.created_at,
+                 u.prenom, u.nom,
+                 v.nom AS equipement_nom,
+                 'vehicules' AS resource_type
+          FROM   reservation_vehicules r
+          JOIN   users    u ON r.id_user     = u.id
+          JOIN   vehicules v ON r.id_vehicule = v.id
+          ORDER  BY created_at DESC
+          LIMIT  10
         `
       };
 

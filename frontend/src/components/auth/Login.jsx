@@ -161,7 +161,7 @@ export const Login = () => {
                 {/* Email Field */}
                 <FormGroup>
                   <Label htmlFor="email" required>
-                    {t('form.email')}
+                    {t('signIn.email')}
                   </Label>
                   <div className="relative group/input">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 group-focus-within/input:text-primary-500 transition-colors" />
@@ -182,7 +182,7 @@ export const Login = () => {
                 <FormGroup>
                   <div className="flex items-center justify-between mb-2">
                     <Label htmlFor="password" required>
-                      {t('form.password')}
+                      {t('signIn.password')}
                     </Label>
                     <a
                       href="#forgot"

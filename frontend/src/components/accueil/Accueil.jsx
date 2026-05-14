@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 // Static categories
 const STATIC_CATEGORIES = [
@@ -34,7 +34,9 @@ const STATIC_CATEGORIES = [
 
 export const Accueil = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState(null);
+  const [reservationNotice, setReservationNotice] = useState(null);
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -42,6 +44,14 @@ export const Accueil = () => {
       setUser(JSON.parse(userData));
     }
   }, []);
+
+  useEffect(() => {
+    const msg = location.state?.reservationMessage;
+    if (location.state?.reservationSuccess && msg) {
+      setReservationNotice(msg);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, location.pathname, navigate]);
 
   const handleCategoryClick = (categoryKey) => {
     if (categoryKey === 'vehicules') {
@@ -53,16 +63,41 @@ export const Accueil = () => {
 
   return (
     <div className="flex-1 flex flex-col bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-neutral-950 dark:to-neutral-900">
-      {/* Header */}
-      <header className="h-20 flex items-center justify-between px-10 border-b border-cyan-200 dark:border-neutral-800 sticky top-0 z-40 bg-white/80 dark:bg-neutral-950/80 backdrop-blur">
-      </header>
+
 
       {/* Main Content */}
       <main className="p-10 max-w-7xl mx-auto w-full">
+        {reservationNotice && (
+          <div
+            role="status"
+            className="mb-10 flex items-start justify-between gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-900 shadow-sm dark:border-emerald-800/60 dark:bg-emerald-950/40 dark:text-emerald-100"
+          >
+            <div className="flex items-start gap-3 min-w-0">
+              <span className="text-2xl shrink-0" aria-hidden>
+                ✓
+              </span>
+              <p className="text-sm font-semibold leading-relaxed sm:text-base">{reservationNotice}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setReservationNotice(null)}
+              className="shrink-0 rounded-lg px-2 py-1 text-sm font-medium text-emerald-800 hover:bg-emerald-100/80 dark:text-emerald-200 dark:hover:bg-emerald-900/50"
+              aria-label="Fermer le message"
+            >
+              Fermer
+            </button>
+          </div>
+        )}
+
         {/* Title Section */}
-        <div className="mb-16">
-          <h1 className="text-6xl font-black text-neutral-900 dark:text-white mb-2">Effectuez votre réservation</h1>
-          <p className="text-neutral-600 dark:text-neutral-400">Sélectionnez une catégorie pour voir les ressources disponibles</p>
+        <div className="mb-16 text-center">
+          <h1 className="text-5xl font-black mb-3 bg-gradient-to-r from-cyan-500 via-blue-500 to-blue-700 bg-clip-text text-transparent drop-shadow-sm">
+            Effectuez votre réservation
+          </h1>
+          <div className="mx-auto mb-4 h-1 w-24 rounded-full bg-gradient-to-r from-cyan-400 to-blue-600" />
+          <p className="text-base font-medium text-slate-500 dark:text-slate-400 tracking-wide">
+            Sélectionnez une catégorie pour voir les ressources disponibles
+          </p>
         </div>
 
         {/* Categories Grid */}
