@@ -1,48 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Calendar, Clock, Users, CheckCircle, XCircle, AlertCircle, UserPlus, Mail, Settings, X, Package } from 'lucide-react';
-
-// Simple component to fetch and display equipments
-const SimpleEquipmentList = ({ reservationId }) => {
-  const [equipments, setEquipments] = useState(null);
-
-  useEffect(() => {
-    axios.get(`http://localhost:3000/api/reservations/${reservationId}/equipments`)
-      .then(response => {
-        console.log('Fetched equipments:', response.data);
-        setEquipments(response.data);
-      })
-      .catch(err => {
-        console.error('Error fetching equipments:', err);
-        setEquipments([]);
-      });
-  }, [reservationId]);
-
-  if (equipments === null) {
-    return <p className="text-slate-500">Chargement des équipements...</p>;
-  }
-
-  if (equipments.length === 0) {
-    return <p className="text-slate-500">Aucun équipement</p>;
-  }
-
-  return (
-    <div>
-      <h4 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-        <Settings className="w-5 h-5" />
-        Équipements ({equipments.length})
-      </h4>
-      <div className="space-y-2">
-        {equipments.map((equipment, index) => (
-          <div key={index} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-            <Settings className="w-5 h-5 text-blue-500" />
-            <span className="font-medium text-slate-900 dark:text-white">{equipment.nom}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
+import { Calendar, Clock, Users, CheckCircle, XCircle, AlertCircle, UserPlus, Mail, Settings, X, Package, MapPin, Navigation, FileText, Zap, MessageSquare, Briefcase } from 'lucide-react';
 
 export const ManageReservations = () => {
   const [reservations, setReservations] = useState([]);
@@ -52,8 +10,6 @@ export const ManageReservations = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelDescription, setCancelDescription] = useState('');
   const [updating, setUpdating] = useState(false);
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
   const [expandedReservation, setExpandedReservation] = useState(null);
   const [invitations, setInvitations] = useState({});
   const [equipmentsData, setEquipmentsData] = useState({});
@@ -65,10 +21,7 @@ export const ManageReservations = () => {
   const fetchReservations = async () => {
     setLoading(true);
     try {
-      console.log('Fetching reservations...');
       const response = await axios.get('http://localhost:3000/api/reservations');
-      console.log('Reservations response:', response.data);
-      console.log('Number of reservations:', response.data?.length || 0);
       setReservations(response.data || []);
       setLoading(false);
     } catch (err) {
@@ -85,14 +38,11 @@ export const ManageReservations = () => {
         statut: newStatus,
         description: description
       });
-      
-      // Update local state
-      setReservations(prev => prev.map(res => 
-        res.id_reservation === reservationId 
+      setReservations(prev => prev.map(res =>
+        res.id_reservation === reservationId
           ? { ...res, statut: newStatus, description: description }
           : res
       ));
-      
       setUpdating(false);
       if (showCancelModal) {
         setShowCancelModal(false);
@@ -117,149 +67,64 @@ export const ManageReservations = () => {
     }
   };
 
-  const handleInvitationResponse = async (invitationId, response, reason = '') => {
-    try {
-      await axios.put(`http://localhost:3000/api/reservations/invitations/${invitationId}/respond`, {
-        response: response,
-        refusal_reason: reason
-      });
-      
-      // Refresh invitations
-      if (selectedReservation) {
-        fetchInvitations(selectedReservation.id_reservation);
-      }
-    } catch (err) {
-      setError('Erreur lors de la réponse à l\'invitation');
-    }
-  };
-
   const fetchInvitations = async (reservationId) => {
     try {
       const response = await axios.get(`http://localhost:3000/api/reservations/${reservationId}/invitations`);
-      setInvitations(prev => ({
-        ...prev,
-        [reservationId]: response.data
-      }));
+      setInvitations(prev => ({ ...prev, [reservationId]: response.data }));
     } catch (err) {
       console.error('Error fetching invitations:', err);
     }
   };
 
   const loadEquipments = async (reservationId) => {
-    if (equipmentsData[reservationId]) return; // Déjà chargé
+    if (equipmentsData[reservationId]) return;
     try {
-      console.log('Loading equipments for reservation:', reservationId);
       const response = await axios.get(`http://localhost:3000/api/reservations/${reservationId}/equipments`);
-      console.log('Equipments loaded:', response.data);
-      setEquipmentsData(prev => ({...prev, [reservationId]: response.data}));
+      setEquipmentsData(prev => ({ ...prev, [reservationId]: response.data }));
     } catch (err) {
       console.error('Error loading equipments:', err);
     }
   };
 
   const toggleReservationDetails = (reservation) => {
-    console.log('CLICK DETAILS - reservation ID:', reservation.id_reservation, 'current expanded:', expandedReservation);
-    if (expandedReservation === reservation.id_reservation) {
-      console.log('CLOSING details');
+    const id = reservation.id_reservation;
+    if (expandedReservation === id) {
       setExpandedReservation(null);
     } else {
-      console.log('OPENING details for reservation:', reservation.id_reservation);
-      setExpandedReservation(reservation.id_reservation);
-      if (!invitations[reservation.id_reservation]) {
-        fetchInvitations(reservation.id_reservation);
-      }
-      loadEquipments(reservation.id_reservation);
+      setExpandedReservation(id);
+      if (!invitations[id]) fetchInvitations(id);
+      loadEquipments(id);
     }
   };
 
-  const getStatusColor = (status) => {
+  const getInvitationStatusIcon = (status) => {
     switch (status) {
-      case 'en_attente':
-        return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800';
-      case 'confirmée':
-        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800';
-      case 'annulée':
-        return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800';
-      default:
-        return 'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-800';
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'en_attente':
-        return <AlertCircle className="w-4 h-4" />;
-      case 'confirmée':
-        return <CheckCircle className="w-4 h-4" />;
-      case 'annulée':
-        return <XCircle className="w-4 h-4" />;
-      default:
-        return <AlertCircle className="w-4 h-4" />;
-    }
-  };
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'en_attente':
-        return 'En attente';
-      case 'confirmée':
-        return 'Confirmée';
-      case 'annulée':
-        return 'Annulée';
-      default:
-        return status;
-    }
-  };
-
-  const getInvitationStatusColor = (status) => {
-    switch (status) {
-      case 'accepted':
-        return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800';
-      case 'refused':
-        return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800';
-      case 'pending':
-        return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800';
-      default:
-        return 'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-800';
+      case 'acceptée':
+      case 'accepted': return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case 'refusée':
+      case 'refused': return <XCircle className="w-4 h-4 text-red-500" />;
+      default: return <Clock className="w-4 h-4 text-yellow-500" />;
     }
   };
 
   const getInvitationStatusText = (status) => {
     switch (status) {
-      case 'accepted':
-        return 'Acceptée';
-      case 'refused':
-        return 'Refusée';
-      case 'pending':
-        return 'En attente';
-      default:
-        return status;
+      case 'acceptée':
+      case 'accepted': return 'Acceptée';
+      case 'refusée':
+      case 'refused': return 'Refusée';
+      case 'en_attente':
+      case 'pending': return 'En attente';
+      default: return status;
     }
   };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+    return date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   };
 
-  const formatTime = (timeString) => {
-    return timeString.substring(0, 5);
-  };
-
-  // Filter reservations based on status and search term
-  const displayReservations = reservations.filter(reservation => {
-    const matchesStatus = filterStatus === 'all' || reservation.statut === filterStatus;
-    const matchesSearch = searchTerm === '' || 
-      reservation.user_nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reservation.user_prenom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reservation.equipement_nom?.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
-
-  console.log('Total reservations:', reservations.length);
-  console.log('Filter status:', filterStatus);
-  console.log('Display reservations:', displayReservations.length);
-  console.log('Search term:', searchTerm);
+  const formatTime = (timeString) => timeString?.substring(0, 5) ?? '';
 
   if (loading) {
     return (
@@ -270,64 +135,16 @@ export const ManageReservations = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="inline-flex items-center gap-3 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-full border border-blue-200 dark:border-blue-800 mb-4">
-            <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Gestion des Réservations</span>
-          </div>
-          <h1 className="text-5xl font-bold text-slate-900 dark:text-white mb-4">
+          <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
             Gérer les Réservations
           </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-lg max-w-2xl mx-auto">
-            Consultez, gérez et organisez toutes les réservations d'équipements avec détails et invitations
+          <p className="text-slate-500 dark:text-slate-400">
+            Consultez et gérez toutes les réservations
           </p>
-          
-          {/* Filter Controls */}
-          <div className="mb-6 flex gap-2 flex-wrap mt-6">
-            <button
-              onClick={() => setFilterStatus('all')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filterStatus === 'all' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
-              }`}
-            >
-              Toutes
-            </button>
-            <button
-              onClick={() => setFilterStatus('en_attente')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filterStatus === 'en_attente' 
-                  ? 'bg-yellow-600 text-white' 
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
-              }`}
-            >
-              En attente
-            </button>
-            <button
-              onClick={() => setFilterStatus('confirmée')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filterStatus === 'confirmée' 
-                  ? 'bg-green-600 text-white' 
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
-              }`}
-            >
-              Confirmées
-            </button>
-            <button
-              onClick={() => setFilterStatus('annulée')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filterStatus === 'annulée' 
-                  ? 'bg-red-600 text-white' 
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
-              }`}
-            >
-              Annulées
-            </button>
-          </div>
         </div>
 
         {/* Error Message */}
@@ -338,15 +155,7 @@ export const ManageReservations = () => {
         )}
 
         {/* Reservations List */}
-        {loading ? (
-          <div className="flex flex-col items-center justify-center h-64 space-y-4">
-            <div className="relative">
-              <div className="animate-spin rounded-full h-16 w-16 border-4 border-slate-200 dark:border-slate-700 border-t-blue-600 dark:border-t-blue-400"></div>
-              <div className="absolute inset-0 rounded-full h-16 w-16 border-4 border-transparent border-t-blue-400 dark:border-t-blue-600 animate-spin" style={{ animationDirection: 'reverse' }}></div>
-            </div>
-            <p className="text-slate-600 dark:text-slate-400 font-medium">Chargement des réservations...</p>
-          </div>
-        ) : displayReservations.length === 0 ? (
+        {reservations.length === 0 ? (
           <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-xl">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full mb-6">
               <Calendar className="w-10 h-10 text-slate-400" />
@@ -354,70 +163,57 @@ export const ManageReservations = () => {
             <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">
               Aucune réservation trouvée
             </h3>
-            <p className="text-slate-600 dark:text-slate-400 mb-8 max-w-md mx-auto">
-              Aucune réservation ne correspond aux filtres sélectionnés.
-            </p>
           </div>
         ) : (
           <div className="space-y-6">
-            {displayReservations.map((reservation) => (
-              <div 
+            {reservations.map((reservation) => (
+              <div
                 key={reservation.id_reservation}
-                className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
+                className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300"
               >
-                {/* Header with Status */}
+                {/* Card Header */}
                 <div className="bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 p-6 border-b border-slate-200/60 dark:border-slate-800/60">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border ${getStatusColor(reservation.statut)}`}>
-                        {getStatusIcon(reservation.statut)}
-                        {getStatusText(reservation.statut)}
-                      </span>
-                      <span className="text-sm text-slate-500 dark:text-slate-400 font-mono">
-                        #{reservation.id_reservation}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {reservation.statut === 'en_attente' || reservation.statut==='' && (
-                        <button 
+                  {/* Action Buttons Row */}
+                  <div className="flex items-center justify-end gap-3 mb-4">
+                    {reservation.statut === 'en_attente' && (
+                      <>
+                        <button
                           onClick={() => handleStatusChange(reservation.id_reservation, 'confirmée')}
                           className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-sm font-medium hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
                         >
                           <CheckCircle className="w-4 h-4" />
                           Accepter
                         </button>
-                      )}
-                      {reservation.statut === 'en_attente'  || reservation.statut==='' && (
-                        <button 
+                        <button
                           onClick={() => openCancelModal(reservation)}
                           className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
                         >
                           <X className="w-4 h-4" />
                           Refuser
                         </button>
-                      )}
-                      <button
-                        onClick={() => toggleReservationDetails(reservation)}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                      >
-                        <Settings className="w-4 h-4" />
-                        {expandedReservation === reservation.id_reservation ? 'Masquer' : 'Détails'}
-                      </button>
-                    </div>
+                      </>
+                    )}
+                    <button
+                      onClick={() => toggleReservationDetails(reservation)}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                    >
+                      <Settings className="w-4 h-4" />
+                      {expandedReservation === reservation.id_reservation ? 'Masquer' : 'Détails'}
+                    </button>
                   </div>
-                  
-                  {/* Resource Info with Image */}
-                  <div className="mb-4 flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+
+                  {/* Resource Info */}
+                  <div className="mb-4 flex items-center gap-4 p-4 bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
                     {reservation.resource_image ? (
                       <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border border-slate-200/60 dark:border-slate-700/60">
-                        <img 
-                          src={reservation.resource_image} 
+                        <img
+                          src={reservation.resource_image}
                           alt={reservation.resource_nom || reservation.equipement_nom}
                           className="w-full h-full object-cover"
                         />
                       </div>
                     ) : (
-                      <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-500 dark:to-blue-700 flex items-center justify-center flex-shrink-0">
+                      <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
                         <Package className="w-8 h-8 text-white" />
                       </div>
                     )}
@@ -425,10 +221,14 @@ export const ManageReservations = () => {
                       <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                         {reservation.resource_nom || reservation.equipement_nom || 'Ressource'}
                       </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                        {reservation.category_type === 'salles' ? 'Salle' : reservation.category_type === 'vehicules' ? 'Véhicule' : 'Équipement'}
+                      </p>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center gap-6">
+
+                  {/* Info Row */}
+                  <div className="flex flex-wrap items-center gap-6">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
                         <Calendar className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -445,9 +245,9 @@ export const ManageReservations = () => {
                         <Clock className="w-6 h-6 text-green-600 dark:text-green-400" />
                       </div>
                       <div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Durée</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Horaire</p>
                         <p className="font-semibold text-slate-900 dark:text-white">
-                          {formatTime(reservation.time_start)} - {formatTime(reservation.time_end)}
+                          {formatTime(reservation.time_start)} – {formatTime(reservation.time_end)}
                         </p>
                       </div>
                     </div>
@@ -456,7 +256,7 @@ export const ManageReservations = () => {
                         <Users className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                       </div>
                       <div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Utilisateur</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Demandeur</p>
                         <p className="font-semibold text-slate-900 dark:text-white">
                           {reservation.prenom} {reservation.nom}
                         </p>
@@ -465,11 +265,139 @@ export const ManageReservations = () => {
                   </div>
                 </div>
 
-                {/* Content */}
-                {console.log('CHECK DISPLAY - expandedReservation:', expandedReservation, 'reservation.id_reservation:', reservation.id_reservation, 'MATCH:', expandedReservation === reservation.id_reservation)}
+                {/* Expandable Details */}
                 {expandedReservation === reservation.id_reservation && (
-                  <div className="p-6 border-t border-slate-200/60 dark:border-slate-800/60">
-                    <p className="text-xl font-bold text-blue-600">Bonjour !</p>
+                  <div className="p-6 space-y-5">
+
+                    {/* Equipments — salles only */}
+                    {reservation.category_type === 'salles' && (
+                      <div>
+                        <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+                          <div className="w-7 h-7 bg-blue-600 rounded-md flex items-center justify-center">
+                            <Package className="w-4 h-4 text-white" />
+                          </div>
+                          {(() => {
+                            const list = equipmentsData[reservation.id_reservation] || [];
+                            const total = list.reduce((s, e) => s + (Number(e.quantity) > 0 ? Number(e.quantity) : 1), 0);
+                            return `Équipements réservés (${total} unité${total > 1 ? 's' : ''})`;
+                          })()}
+                        </h4>
+                        {equipmentsData[reservation.id_reservation]?.length > 0 ? (
+                          <div className="flex flex-wrap gap-2 pl-9">
+                            {equipmentsData[reservation.id_reservation].map((eq, i) => {
+                              const q = Number(eq.quantity) > 0 ? Number(eq.quantity) : 1;
+                              return (
+                                <span key={i} className="inline-flex items-center px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40 rounded-lg text-sm font-medium text-blue-800 dark:text-blue-200">
+                                  {eq.nom}{q > 1 ? ` × ${q}` : ''}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-slate-500 dark:text-slate-400 italic pl-9">Aucun équipement supplémentaire</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Note — salles only */}
+                    {reservation.category_type === 'salles' && reservation.note && (
+                      <div>
+                        <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+                          <div className="w-7 h-7 bg-blue-600 rounded-md flex items-center justify-center">
+                            <FileText className="w-4 h-4 text-white" />
+                          </div>
+                          Note
+                        </h4>
+                        <p className="text-sm text-slate-700 dark:text-slate-300 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40 rounded-lg px-3 py-2 ml-9 leading-relaxed">
+                          {reservation.note}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Invitations — salles only */}
+                    {reservation.category_type === 'salles' && (
+                      <div>
+                        <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+                          <div className="w-7 h-7 bg-blue-600 rounded-md flex items-center justify-center">
+                            <Mail className="w-4 h-4 text-white" />
+                          </div>
+                          Invitations ({invitations[reservation.id_reservation]?.length || 0})
+                        </h4>
+                        {invitations[reservation.id_reservation]?.length > 0 ? (
+                          <div className="space-y-2 ml-9">
+                            {invitations[reservation.id_reservation].map((inv, i) => (
+                              <div key={i} className="flex items-center justify-between px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40 rounded-lg">
+                                <div className="flex items-center gap-2">
+                                  <UserPlus className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                                  <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                                    {inv.email || `${inv.prenom} ${inv.nom}`}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  {getInvitationStatusIcon(inv.statut)}
+                                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                                    {getInvitationStatusText(inv.statut)}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-slate-500 dark:text-slate-400 italic pl-9">Aucune invitation</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Vehicle details */}
+                    {reservation.category_type === 'vehicules' && (
+                      <div>
+                        <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+                          <div className="w-7 h-7 bg-blue-600 rounded-md flex items-center justify-center">
+                            <Briefcase className="w-4 h-4 text-white" />
+                          </div>
+                          Détails du trajet
+                        </h4>
+                        <div className="ml-9 grid grid-cols-2 gap-2">
+                          {reservation.vehicle_motif && (
+                            <div className="col-span-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40 rounded-lg">
+                              <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold uppercase tracking-wide mb-0.5">Motif</p>
+                              <p className="text-sm text-slate-800 dark:text-slate-200 font-medium">{reservation.vehicle_motif}</p>
+                            </div>
+                          )}
+                          {reservation.vehicle_depart && (
+                            <div className="px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40 rounded-lg">
+                              <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold uppercase tracking-wide mb-0.5 flex items-center gap-1"><MapPin className="w-3 h-3" />Départ</p>
+                              <p className="text-sm text-slate-800 dark:text-slate-200 font-medium">{reservation.vehicle_depart}</p>
+                            </div>
+                          )}
+                          {reservation.vehicle_destination && (
+                            <div className="px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40 rounded-lg">
+                              <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold uppercase tracking-wide mb-0.5 flex items-center gap-1"><Navigation className="w-3 h-3" />Destination</p>
+                              <p className="text-sm text-slate-800 dark:text-slate-200 font-medium">{reservation.vehicle_destination}</p>
+                            </div>
+                          )}
+                          {reservation.vehicle_distance && (
+                            <div className="px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40 rounded-lg">
+                              <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold uppercase tracking-wide mb-0.5 flex items-center gap-1"><Zap className="w-3 h-3" />Distance</p>
+                              <p className="text-sm text-slate-800 dark:text-slate-200 font-medium">{reservation.vehicle_distance} km</p>
+                            </div>
+                          )}
+                          {reservation.vehicle_note && (
+                            <div className="col-span-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40 rounded-lg">
+                              <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold uppercase tracking-wide mb-0.5 flex items-center gap-1"><MessageSquare className="w-3 h-3" />Note</p>
+                              <p className="text-sm text-slate-800 dark:text-slate-200">{reservation.vehicle_note}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Footer info */}
+                    {reservation.created_at && (
+                      <div className="pt-3 border-t border-slate-200/60 dark:border-slate-800/60 text-xs text-slate-500 dark:text-slate-400">
+                        Créée le {new Date(reservation.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} à {new Date(reservation.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -489,14 +417,14 @@ export const ManageReservations = () => {
                   Refuser la réservation
                 </h3>
               </div>
-              
+
               <div className="mb-6 bg-slate-50 dark:bg-slate-800 rounded-xl p-4 space-y-2">
                 <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">DÉTAILS DE LA RÉSERVATION</p>
                 <p className="text-base font-semibold text-slate-900 dark:text-white">
-                  {selectedReservation?.user_prenom} {selectedReservation?.user_nom}
+                  {selectedReservation?.prenom} {selectedReservation?.nom}
                 </p>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                   {new Date(selectedReservation?.date_reservation).toLocaleDateString('fr-FR')} à {selectedReservation?.time_start}
+                  {new Date(selectedReservation?.date_reservation).toLocaleDateString('fr-FR')} · {selectedReservation?.time_start?.substring(0, 5)}
                 </p>
               </div>
 
@@ -510,17 +438,12 @@ export const ManageReservations = () => {
                   placeholder="Expliquez pourquoi cette réservation est refusée..."
                   className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none placeholder-slate-500 dark:placeholder-slate-400"
                   rows={4}
-                  required
                 />
               </div>
 
               <div className="flex gap-3 justify-end">
                 <button
-                  onClick={() => {
-                    setShowCancelModal(false);
-                    setSelectedReservation(null);
-                    setCancelDescription('');
-                  }}
+                  onClick={() => { setShowCancelModal(false); setSelectedReservation(null); setCancelDescription(''); }}
                   className="px-6 py-3 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-semibold transition-colors"
                 >
                   Annuler
@@ -528,7 +451,7 @@ export const ManageReservations = () => {
                 <button
                   onClick={confirmCancel}
                   disabled={!cancelDescription.trim() || updating}
-                  className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 dark:from-red-600 dark:to-red-700 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl hover:from-red-700 hover:to-red-800 dark:hover:from-red-700 dark:hover:to-red-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg font-semibold shadow-lg hover:from-red-700 hover:to-red-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   <X className="w-4 h-4" />
                   {updating ? 'Refus en cours...' : 'Confirmer le refus'}

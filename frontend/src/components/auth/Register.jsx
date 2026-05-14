@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, Link } from 'react-router-dom'
-import { User, Mail, Lock, Building2, Briefcase, ArrowRight } from 'lucide-react'
+import { User, Mail, Lock, Building2, Briefcase, ArrowRight, Phone } from 'lucide-react'
 import { ThemeToggle } from '../landing/ThemeToggle'
 import { LanguageSwitcher } from '../landing/LanguageSwitcher'
 import { Button } from '../common/Button'
@@ -21,6 +21,7 @@ export const Register = () => {
     jobtitle: '',
     departement: '',
     email: '',
+    telephone: '',
     confirmPassword: '',
     agreeToTerms: false,
   })
@@ -50,6 +51,11 @@ export const Register = () => {
       return
     }
 
+    if (formData.telephone && formData.telephone.replace(/\D/g, '').length !== 8) {
+      setError('Le numéro de téléphone doit contenir exactement 8 chiffres')
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -62,6 +68,7 @@ export const Register = () => {
         jobtitle: formData.jobtitle,
         departement: formData.departement,
         email: formData.email,
+        telephone: formData.telephone,
       })
 
       if (response.status === 201 || response.status === 200) {
@@ -82,6 +89,19 @@ export const Register = () => {
     'Marketing',
     'Ventes',
     'Opérations',
+  ]
+
+  const jobTitles = [
+    'Manager',
+    'Chef de projet',
+    'Développeur',
+    'Commercial',
+    'Comptable',
+    'Assistant',
+    'Directeur',
+    'RH',
+    'Stagiaire',
+    'Autre',
   ]
 
   return (
@@ -142,7 +162,7 @@ export const Register = () => {
               <div className="grid md:grid-cols-2 gap-6">
                 <FormGroup>
                   <Label htmlFor="prenom" required>
-                    {t('form.firstName')}
+                    {t('signUp.firstName')}
                   </Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
@@ -160,7 +180,7 @@ export const Register = () => {
 
                 <FormGroup>
                   <Label htmlFor="nom" required>
-                    {t('form.lastName')}
+                    {t('signUp.lastName')}
                   </Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
@@ -180,7 +200,7 @@ export const Register = () => {
               {/* Email Field */}
               <FormGroup>
                 <Label htmlFor="email" required>
-                  {t('form.email')}
+                  {t('signUp.email')}
                 </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
@@ -197,11 +217,36 @@ export const Register = () => {
                 </div>
               </FormGroup>
 
+              {/* Phone Field */}
+              <FormGroup>
+                <Label htmlFor="telephone">
+                  Numéro de téléphone
+                </Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                  <Input
+                    id="telephone"
+                    type="tel"
+                    name="telephone"
+                    value={formData.telephone}
+                    onChange={handleChange}
+                    placeholder="Ex: 55123456"
+                    className="pl-10"
+                    pattern="[0-9]{8}"
+                    title="Le numéro de téléphone doit contenir exactement 8 chiffres"
+                    maxLength={8}
+                  />
+                </div>
+                {formData.telephone && formData.telephone.replace(/\D/g, '').length !== 8 && (
+                  <p className="text-xs text-red-500 mt-1">Le numéro doit contenir exactement 8 chiffres</p>
+                )}
+              </FormGroup>
+
               {/* Department and Job Title */}
               <div className="grid md:grid-cols-2 gap-6">
                 <FormGroup>
                   <Label htmlFor="departement" required>
-                    {t('form.department')}
+                    {t('signUp.department')}
                   </Label>
                   <div className="relative">
                     <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 z-10 pointer-events-none" />
@@ -223,18 +268,24 @@ export const Register = () => {
 
                 <FormGroup>
                   <Label htmlFor="jobtitle">
-                    {t('form.jobTitle')}
+                    {t('signUp.jobtitle')}
                   </Label>
                   <div className="relative">
-                    <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                    <Input
+                    <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 z-10 pointer-events-none" />
+                    <select
                       id="jobtitle"
                       name="jobtitle"
                       value={formData.jobtitle}
                       onChange={handleChange}
-                      placeholder="Manager"
-                      className="pl-10"
-                    />
+                      className="input pl-10 appearance-none"
+                    >
+                      <option value="">{t('signUp.selectJobTitle')}</option>
+                      {jobTitles.map((title) => (
+                        <option key={title} value={title}>
+                          {title}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </FormGroup>
               </div>
@@ -243,7 +294,7 @@ export const Register = () => {
               <div className="grid md:grid-cols-2 gap-6">
                 <FormGroup>
                   <Label htmlFor="mdp" required>
-                    {t('form.password')}
+                    {t('signUp.password')}
                   </Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />

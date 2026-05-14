@@ -162,8 +162,8 @@ export const ReservationCalendar = ({ equipmentId, equipmentName, onReservationC
   };
 
   const handleCancelReservation = () => {
-    console.log('handleCancelReservation called, navigating to /category');
-    navigate('/category');
+    console.log('handleCancelReservation called, navigating to /accueil');
+    navigate('/accueil');
   };
 
   const getDaysInMonth = (date) => {

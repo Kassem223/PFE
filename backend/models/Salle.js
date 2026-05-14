@@ -55,12 +55,12 @@ const Salle = {
 
   async getReservations(salleId) {
     const [rows] = await db.execute(`
-      SELECT r.*, u.prenom, u.nom, s.nom as salle_nom
-      FROM reservations r
-      JOIN users u ON r.id_user = u.id
-      JOIN salles s ON r.id_salle = s.id
-      WHERE r.id_salle = ?
-      ORDER BY r.created_at DESC
+      SELECT rs.*, u.prenom, u.nom, s.nom AS salle_nom
+      FROM   reservation_salles rs
+      JOIN   users  u ON rs.id_user  = u.id
+      JOIN   salles s ON rs.id_salle = s.id
+      WHERE  rs.id_salle = ?
+      ORDER  BY rs.created_at DESC
     `, [salleId]);
     return rows;
   }

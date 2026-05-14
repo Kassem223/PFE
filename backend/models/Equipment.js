@@ -45,46 +45,47 @@ const Equipment = {
   },
 
   async getReservations(equipmentId) {
-    // Chercher les réservations en fonction du type d'équipement
-    const [salles] = await db.execute('SELECT * FROM salles WHERE id = ?', [equipmentId]);
-    if (salles[0]) {
+    // Check which table this ID belongs to and query accordingly
+    const [salles] = await db.execute('SELECT id FROM salles WHERE id = ?', [equipmentId]);
+    if (salles.length) {
       const [rows] = await db.execute(`
-        SELECT r.*, u.prenom, u.nom, s.nom as equipement_nom
-        FROM reservations r
-        JOIN users u ON r.id_user = u.id
-        JOIN salles s ON r.id_equipement = s.id
-        WHERE r.id_equipement = ?
-        ORDER BY r.created_at DESC
+        SELECT rs.*, u.prenom, u.nom, s.nom AS equipement_nom
+        FROM   reservation_salles rs
+        JOIN   users  u ON rs.id_user  = u.id
+        JOIN   salles s ON rs.id_salle = s.id
+        WHERE  rs.id_salle = ?
+        ORDER  BY rs.created_at DESC
       `, [equipmentId]);
       return rows;
     }
-    
-    const [vehicules] = await db.execute('SELECT * FROM vehicules WHERE id = ?', [equipmentId]);
-    if (vehicules[0]) {
+
+    const [vehicules] = await db.execute('SELECT id FROM vehicules WHERE id = ?', [equipmentId]);
+    if (vehicules.length) {
       const [rows] = await db.execute(`
-        SELECT r.*, u.prenom, u.nom, v.nom as equipement_nom
-        FROM reservations r
-        JOIN users u ON r.id_user = u.id
-        JOIN vehicules v ON r.id_equipement = v.id
-        WHERE r.id_equipement = ?
-        ORDER BY r.created_at DESC
+        SELECT rv.*, u.prenom, u.nom, v.nom AS equipement_nom
+        FROM   reservation_vehicules rv
+        JOIN   users    u ON rv.id_user     = u.id
+        JOIN   vehicules v ON rv.id_vehicule = v.id
+        WHERE  rv.id_vehicule = ?
+        ORDER  BY rv.created_at DESC
       `, [equipmentId]);
       return rows;
     }
-    
-    const [equipements] = await db.execute('SELECT * FROM equipements WHERE id = ?', [equipmentId]);
-    if (equipements[0]) {
+
+    const [equipements] = await db.execute('SELECT id FROM equipements WHERE id = ?', [equipmentId]);
+    if (equipements.length) {
+      // Equipements are linked via reservation_salles.equipment_ids (JSON array)
       const [rows] = await db.execute(`
-        SELECT r.*, u.prenom, u.nom, e.nom as equipement_nom
-        FROM reservations r
-        JOIN users u ON r.id_user = u.id
-        JOIN equipements e ON r.id_equipement = e.id
-        WHERE r.id_equipement = ?
-        ORDER BY r.created_at DESC
+        SELECT rs.*, u.prenom, u.nom, s.nom AS equipement_nom
+        FROM   reservation_salles rs
+        JOIN   users  u ON rs.id_user  = u.id
+        JOIN   salles s ON rs.id_salle = s.id
+        WHERE  JSON_CONTAINS(rs.equipment_ids, CAST(? AS JSON))
+        ORDER  BY rs.created_at DESC
       `, [equipmentId]);
       return rows;
     }
-    
+
     return [];
   }
 };

@@ -55,12 +55,12 @@ const Vehicule = {
 
   async getReservations(vehiculeId) {
     const [rows] = await db.execute(`
-      SELECT r.*, u.prenom, u.nom, v.nom as vehicule_nom
-      FROM reservations r
-      JOIN users u ON r.id_user = u.id
-      JOIN vehicules v ON r.id_vehicule = v.id
-      WHERE r.id_vehicule = ?
-      ORDER BY r.created_at DESC
+      SELECT rv.*, u.prenom, u.nom, v.nom AS vehicule_nom
+      FROM   reservation_vehicules rv
+      JOIN   users    u ON rv.id_user     = u.id
+      JOIN   vehicules v ON rv.id_vehicule = v.id
+      WHERE  rv.id_vehicule = ?
+      ORDER  BY rv.created_at DESC
     `, [vehiculeId]);
     return rows;
   }

@@ -19,7 +19,7 @@ const User = {
     return rows[0] || null;
   },
 
-  async create({ nom, prenom, email, mdp, password, role, departement, adresse, jobtitle }) {
+  async create({ nom, prenom, email, mdp, password, role, departement, adresse, jobtitle, telephone }) {
     // Accept both 'mdp' and 'password' field names
     const pwd = mdp || password;
     const hashedPassword = await bcrypt.hash(pwd, 10);
@@ -27,8 +27,8 @@ const User = {
     try {
       // Try to insert with all fields
       const [result] = await db.execute(
-        'INSERT INTO users (nom, prenom, email, mdp, role, departement, adresse, jobtitle) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [nom, prenom, email, hashedPassword, role, departement ?? null, adresse ?? null, jobtitle ?? null]
+        'INSERT INTO users (nom, prenom, email, mdp, role, departement, adresse, jobtitle, telephone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [nom, prenom, email, hashedPassword, role, departement ?? null, adresse ?? null, jobtitle ?? null, telephone ?? null]
       );
       return result.insertId;
     } catch (error) {
@@ -44,12 +44,13 @@ const User = {
     }
   },
 
-  async update(id, { nom, prenom, email, role, departement, adresse, jobtitle, profile_image }) {
+  async update(id, { nom, prenom, email, role, departement, adresse, jobtitle, telephone, profile_image }) {
     const [result] = await db.execute(
-      'UPDATE users SET nom = ?, prenom = ?, departement = ?, adresse = ?, jobtitle = ?, profile_picture = ? WHERE id = ?',
-      [nom ?? null, prenom ?? null, departement ?? null, adresse ?? null, jobtitle ?? null, profile_image ?? null, id]
+      'UPDATE users SET nom = ?, prenom = ?, departement = ?, adresse = ?, jobtitle = ?, telephone = ?, profile_picture = ? WHERE id = ?',
+      [nom ?? null, prenom ?? null, departement ?? null, adresse ?? null, jobtitle ?? null, telephone ?? null, profile_image ?? null, id]
     );
-    return result.affectedRows > 0;
+    // affectedRows can be 0 if data is unchanged — still a success if the user exists
+    return result.affectedRows > 0 || result.warningStatus === 0;
   },
 
   async delete(id) {

@@ -54,14 +54,15 @@ const EquipementNew = {
   },
 
   async getReservations(equipementId) {
+    // Equipements are linked via reservation_salles.equipment_ids JSON array
     const [rows] = await db.execute(`
-      SELECT r.*, u.prenom, u.nom, e.nom as equipement_nom
-      FROM reservations r
-      JOIN users u ON r.id_user = u.id
-      JOIN equipements e ON r.id_equipement = e.id
-      WHERE r.id_equipement = ?
-      ORDER BY r.created_at DESC
-    `, [equipementId]);
+      SELECT rs.*, u.prenom, u.nom, e.nom AS equipement_nom
+      FROM   reservation_salles rs
+      JOIN   users      u ON rs.id_user  = u.id
+      JOIN   equipements e ON e.id = ?
+      WHERE  JSON_CONTAINS(rs.equipment_ids, CAST(? AS JSON))
+      ORDER  BY rs.created_at DESC
+    `, [equipementId, equipementId]);
     return rows;
   }
 };

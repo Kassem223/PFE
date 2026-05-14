@@ -18,15 +18,24 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const salleRoutes = require('./routes/salleRoutes');
 const vehiculeRoutes = require('./routes/vehiculeRoutes');
 const equipementNewRoutes = require('./routes/equipementNewRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 // Import config
 const cloudinary = require('./config/cloudinary');
+const db = require('./config/database');
 
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Request logging middleware
+app.use((req, res, next) => {
+  const fs = require('fs');
+  fs.appendFileSync('./requests.log', `[${new Date().toISOString()}] ${req.method} ${req.path}\n`);
+  next();
+});
 
 // Multer configuration for file uploads
 const storage = new CloudinaryStorage({
@@ -355,59 +364,6 @@ app.use('/api/salles', salleRoutes);
 app.use('/api/vehicules', vehiculeRoutes);
 app.use('/api/equipements', equipementNewRoutes);
 
-// Invitation routes that were outside the main pattern
-const Invitation = require('./models/Invitation');
-app.get('/api/reservations/invitations', async (req, res) => {
-  try {
-    let { ids } = req.query;
-    if (!ids) {
-      return res.status(400).json({ error: 'Missing ids parameter' });
-    }
-    // Support both comma-separated string and array
-    if (typeof ids === 'string') {
-      ids = ids.split(',').map(id => id.trim()).filter(Boolean);
-    }
-    if (!Array.isArray(ids) || ids.length === 0) {
-      return res.status(400).json({ error: 'Invalid ids parameter' });
-    }
-    const invitations = await Invitation.getMultipleByIds(ids);
-    res.json(invitations);
-  } catch (error) {
-    console.error('Error fetching invitations for multiple reservations:', error);
-    res.status(500).json({ error: 'Failed to fetch invitations for multiple reservations' });
-  }
-});
-
-// Invitation response routes
-app.get('/api/invitations/:id/accept', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const success = await Invitation.updateResponse(id, 'accepted');
-    if (!success) {
-      return res.status(404).json({ error: 'Invitation not found' });
-    }
-    res.json({ success: true, message: 'Invitation accepted successfully' });
-  } catch (error) {
-    console.error('Error accepting invitation:', error);
-    res.status(500).json({ error: 'Failed to accept invitation' });
-  }
-});
-
-app.get('/api/invitations/:id/refuse', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { reason } = req.query;
-    const success = await Invitation.updateResponse(id, 'refused', reason);
-    if (!success) {
-      return res.status(404).json({ error: 'Invitation not found' });
-    }
-    res.json({ success: true, message: 'Invitation refused successfully' });
-  } catch (error) {
-    console.error('Error refusing invitation:', error);
-    res.status(500).json({ error: 'Failed to refuse invitation' });
-  }
-});
-
 // File upload route
 app.post('/api/upload', upload.single('file'), (req, res) => {
   try {
@@ -497,10 +453,16 @@ app.get('/api/debug-users', async (req, res) => {
   }
 });
 
+app.use('/api/notifications', notificationRoutes);
+
+// Compatibility route for notifications
+const notificationController = require('./controllers/notificationController');
+app.get('/api/users/:id/notifications', notificationController.getByUserId);
+
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT} - VERSION NOTIF FIX`);
   console.log(`Database: ${process.env.DB_NAME || 'vektor_db'}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });

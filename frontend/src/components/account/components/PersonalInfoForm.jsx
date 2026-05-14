@@ -1,13 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+const JOB_TITLES = [
+  'Manager',
+  'Chef de projet',
+  'Développeur',
+  'Commercial',
+  'Comptable',
+  'Assistant',
+  'Directeur',
+  'RH',
+  'Stagiaire',
+  'Autre',
+];
 
 export const PersonalInfoForm = ({ formData, onInputChange, onSubmit, onCancel, saving, message }) => {
+  const [phoneError, setPhoneError] = useState('');
+
+  const handlePhoneChange = (e) => {
+    const val = e.target.value.replace(/\D/g, ''); // digits only
+    const syntheticEvent = { target: { name: 'telephone', value: val } };
+    onInputChange(syntheticEvent);
+    if (val.length > 0 && val.length !== 8) {
+      setPhoneError('Le numéro doit contenir exactement 8 chiffres');
+    } else {
+      setPhoneError('');
+    }
+  };
+
+  const handleFormSubmit = (e) => {
+    const digits = (formData.telephone || '').replace(/\D/g, '');
+    if (digits.length > 0 && digits.length !== 8) {
+      e.preventDefault();
+      setPhoneError('Le numéro doit contenir exactement 8 chiffres');
+      return;
+    }
+    onSubmit(e);
+  };
+
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 p-8">
       <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6">
         Informations personnelles
       </h3>
       
-      <form onSubmit={onSubmit} className="space-y-6">
+      <form onSubmit={handleFormSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-2">
@@ -54,19 +90,42 @@ export const PersonalInfoForm = ({ formData, onInputChange, onSubmit, onCancel, 
           />
         </div>
 
+        <div>
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-2">
+            Numéro de téléphone
+          </label>
+          <input
+            type="tel"
+            name="telephone"
+            value={formData.telephone || ''}
+            onChange={handlePhoneChange}
+            maxLength={8}
+            className={`w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              phoneError ? 'border-red-400 dark:border-red-500' : 'border-slate-300 dark:border-slate-700'
+            }`}
+            placeholder="Ex: 55123456"
+          />
+          {phoneError && (
+            <p className="text-xs text-red-500 mt-1">{phoneError}</p>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block mb-2">
               Poste
             </label>
-            <input
-              type="text"
+            <select
               name="jobtitle"
-              value={formData.jobtitle}
+              value={formData.jobtitle || ''}
               onChange={onInputChange}
-              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Développeur Full Stack"
-            />
+              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+            >
+              <option value="">Sélectionnez un poste</option>
+              {JOB_TITLES.map(title => (
+                <option key={title} value={title}>{title}</option>
+              ))}
+            </select>
           </div>
           
           <div>

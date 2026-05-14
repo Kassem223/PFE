@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { VehicleReservationForm } from './VehicleReservationForm';
 
 export const ReservationModal = ({ isOpen, onClose, equipment, selectedDate, selectedTime, selectedTimeEnd, resourceId, categoryType }) => {
   const navigate = useNavigate();
@@ -24,9 +25,17 @@ export const ReservationModal = ({ isOpen, onClose, equipment, selectedDate, sel
   const [availableUsers, setAvailableUsers] = useState([]);
   const [selectedInternalUsers, setSelectedInternalUsers] = useState([]);
   const [externalEmails, setExternalEmails] = useState(['']);
+  const [salleNote, setSalleNote] = useState('');
 
-  // Determine if we should show equipment selection (only for salles)
+  // Vehicle-specific state
+  const [vehicleFormData, setVehicleFormData] = useState({
+    depart: '', destination: '', motif: '', distance: null, note: '', conditions: false, isValid: false
+  });
+
+  // Équipements additionnels : uniquement salles. Invitations : toutes les catégories sauf véhicules
   const showEquipmentSelection = categoryType === 'salles';
+  const showParticipantInvites = categoryType !== 'vehicules';
+  const isVehicle = categoryType === 'vehicules';
 
   useEffect(() => {
     // Get current user from localStorage
@@ -138,10 +147,19 @@ export const ReservationModal = ({ isOpen, onClose, equipment, selectedDate, sel
           date_reservation: formData.date_reservation,
           time_start: formData.time_start,
           time_end: formData.time_end,
+          resource_type: categoryType,
           internal_users: selectedInternalUsers,
           external_emails: uniqueExternalEmails,
           additional_equipments: selectedEquipments, // Only additional equipments
-          nombre_personnes: totalParticipants
+          nombre_personnes: totalParticipants,
+          ...(categoryType === 'salles' && { note: salleNote }),
+          ...(isVehicle && {
+            vehicle_depart: vehicleFormData.depart,
+            vehicle_destination: vehicleFormData.destination,
+            vehicle_motif: vehicleFormData.motif,
+            vehicle_distance: vehicleFormData.distance,
+            vehicle_note: vehicleFormData.note,
+          }),
         };
         console.log('Sending reservation with invitations:', reservationData);
         await axios.post('http://localhost:3000/api/reservations/with-invitations', reservationData);
@@ -153,8 +171,17 @@ export const ReservationModal = ({ isOpen, onClose, equipment, selectedDate, sel
           date_reservation: formData.date_reservation,
           time_start: formData.time_start,
           time_end: formData.time_end,
+          resource_type: categoryType,
           additional_equipments: selectedEquipments, // Only additional equipments
-          nombre_personnes: totalParticipants
+          nombre_personnes: totalParticipants,
+          ...(categoryType === 'salles' && { note: salleNote }),
+          ...(isVehicle && {
+            vehicle_depart: vehicleFormData.depart,
+            vehicle_destination: vehicleFormData.destination,
+            vehicle_motif: vehicleFormData.motif,
+            vehicle_distance: vehicleFormData.distance,
+            vehicle_note: vehicleFormData.note,
+          }),
         };
         
         // Validation des données
@@ -166,34 +193,33 @@ export const ReservationModal = ({ isOpen, onClose, equipment, selectedDate, sel
         await axios.post('http://localhost:3000/api/reservations', reservationData);
       }
 
-      // Show success message
-      const successMessage = (selectedInternalUsers.length > 0 || uniqueExternalEmails.length > 0)
-        ? 'Réservation créée avec succès! Les invitations ont été envoyées par email.'
-        : 'Réservation créée avec succès!';
-      
-      alert(successMessage);
-      
-      onClose();
-      
-      // Auto-reload and redirect to accueil after a short delay
-      setTimeout(() => {
-        window.location.reload(); // Reload to refresh data
-        navigate('/accueil'); // Redirect to accueil
-      }, 1500);
-      
-      // Reset form
+      const successMessage =
+        selectedInternalUsers.length > 0 || uniqueExternalEmails.length > 0
+          ? 'Réservation créée avec succès ! Les invitations ont été envoyées par email.'
+          : 'Réservation créée avec succès !';
+
       setFormData({
         id_equipement: '',
         id_user: user?.id || '',
         date_reservation: '',
         time_start: '09:00',
         time_end: '10:00',
-        nombre_personnes: 1
+        nombre_personnes: 1,
       });
       setSelectedEquipments([]);
       setSelectedInternalUsers([]);
       setExternalEmails(['']);
       setInvitationType('internal');
+      setSalleNote('');
+
+      onClose();
+
+      navigate('/accueil', {
+        state: {
+          reservationSuccess: true,
+          reservationMessage: successMessage,
+        },
+      });
     } catch (error) {
       console.error('Error creating reservation:', error);
       alert('Erreur lors de la création de la réservation: ' + (error.response?.data?.error || error.message));
@@ -210,39 +236,93 @@ export const ReservationModal = ({ isOpen, onClose, equipment, selectedDate, sel
     );
   };
 
+  const formatTimeDisplay = (t) => {
+    if (!t || typeof t !== 'string') return '—';
+    return t.length >= 5 ? t.slice(0, 5) : t;
+  };
+
+  const slotDateLabel =
+    selectedDate &&
+    selectedDate.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-2xl animate-in fade-in duration-300">
-      <div className="bg-white dark:bg-slate-900 w-full max-w-5xl max-h-[85vh] rounded-[2rem] shadow-2xl border border-white/10 overflow-hidden flex flex-col">
-        
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-300">
+      <div className="bg-white dark:bg-slate-900 w-full max-w-5xl max-h-[90vh] rounded-3xl shadow-2xl shadow-blue-900/10 dark:shadow-black/40 border border-slate-200/80 dark:border-slate-700/80 overflow-hidden flex flex-col ring-1 ring-slate-900/5 dark:ring-white/10">
+
         {/* Modal Header */}
-        <div className="flex items-center justify-center p-6 border-b border-slate-200/60 dark:border-slate-800/60">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-            {selectedDate ? `Réservation - ${selectedDate.toLocaleDateString('fr-FR', { weekday: 'short', month: 'short', day: 'numeric' })}` : 'Nouvelle Réservation'}
+        <div className="relative shrink-0 border-b border-slate-200/80 dark:border-slate-700/80 bg-gradient-to-br from-slate-50 via-white to-blue-50/80 dark:from-slate-900 dark:via-slate-900 dark:to-blue-950/40 px-6 py-5 md:px-8 md:py-6">
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-4 top-4 md:right-6 md:top-6 flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-200/80 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-white"
+            aria-label="Fermer"
+          >
+            <span className="text-2xl leading-none font-light">×</span>
+          </button>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400 mb-1">
+            Confirmation de réservation
+          </p>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white pr-12">
+            {equipment?.nom || 'Ressource'}
           </h2>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400 max-w-2xl">
+            Vérifiez la date et les heures ci-dessous, complétez les options si besoin, puis validez.
+          </p>
         </div>
 
         {/* Modal Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 md:p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
-            
-            {/* User Info - Compact */}
-            <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl mb-6">
-              <div className="w-10 h-10 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center">
-                <span className="text-lg font-bold text-slate-600 dark:text-slate-300">
-                  {user?.prenom?.[0] || 'U'}{user?.nom?.[0] || 'U'}
-                </span>
+            {/* Créneau choisi */}
+            {selectedDate && (
+              <div className="rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-600 to-indigo-700 p-[1px] shadow-lg shadow-blue-600/20 dark:shadow-blue-900/30">
+                <div className="rounded-2xl bg-white px-5 py-5 dark:bg-slate-900/95 md:px-6 md:py-6">
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-4">
+                    Créneau sélectionné
+                  </p>
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-8">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-xl dark:bg-blue-950/80">
+                        📅
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Date</p>
+                        <p className="text-lg font-bold text-slate-900 dark:text-white md:text-xl">
+                          {slotDateLabel}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="hidden h-14 w-px bg-slate-200 dark:bg-slate-700 sm:block" aria-hidden />
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-xl dark:bg-indigo-950/80">
+                        🕐
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Horaire</p>
+                        <p className="text-lg font-bold tabular-nums text-slate-900 dark:text-white md:text-xl">
+                          {formatTimeDisplay(formData.time_start)} → {formatTimeDisplay(formData.time_end)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Réservé par <span className="font-semibold">{user?.prenom || ''} {user?.nom || ''}</span>
-                </p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Participants: {1 + selectedInternalUsers.length + externalEmails.filter(e => e && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)).length}
-                </p>
-              </div>
-            </div>
+            )}
+
+            {/* Vehicle-specific form */}
+            {isVehicle && (
+              <VehicleReservationForm
+                onChange={setVehicleFormData}
+                errors={{}}
+              />
+            )}
 
             {/* Equipment Selection - Only for salles */}
             {showEquipmentSelection && availableEquipments.length > 0 && (
@@ -289,6 +369,23 @@ export const ReservationModal = ({ isOpen, onClose, equipment, selectedDate, sel
                 </div>
               </div>
             )}
+
+            {/* Note - Only for salles */}
+            {showEquipmentSelection && (
+              <div className="space-y-3">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">📝 Note</h3>
+                <textarea
+                  id="salle-note"
+                  value={salleNote}
+                  onChange={(e) => setSalleNote(e.target.value)}
+                  placeholder="Ajoutez une note ou des informations supplémentaires pour cette réservation (optionnel)..."
+                  rows={3}
+                  className="w-full p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all"
+                />
+              </div>
+            )}
+
+            {showParticipantInvites && (
             <div className="space-y-4 mb-6">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">📧 Inviter des participants</h3>
               
@@ -443,22 +540,23 @@ export const ReservationModal = ({ isOpen, onClose, equipment, selectedDate, sel
                 </div>
               </div>
             </div>
-            
+            )}
+
             {/* Action Buttons */}
-            <div className="flex gap-4 pt-6">
-              <button 
-                type="button" 
+            <div className="flex flex-col-reverse gap-3 border-t border-slate-200/80 pt-6 dark:border-slate-700/80 sm:flex-row sm:items-center sm:justify-end sm:gap-4">
+              <button
+                type="button"
                 onClick={onClose}
-                className="flex-1 px-6 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium transition-colors"
+                className="w-full rounded-xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:w-auto"
               >
                 Annuler
               </button>
-              <button 
-                type="submit" 
-                disabled={loading}
-                className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              <button
+                type="submit"
+                disabled={loading || (isVehicle && !vehicleFormData.isValid)}
+                className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/25 transition-all hover:from-blue-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-55 sm:w-auto sm:min-w-[220px]"
               >
-                {loading ? 'Réservation...' : 'Réserver'}
+                {loading ? 'Confirmation en cours…' : 'Confirmer la réservation'}
               </button>
             </div>
           </form>

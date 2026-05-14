@@ -31,7 +31,7 @@ export const Features = () => {
       icon: Users,
       title: t('features.corporateFleet'),
       description: 'Gestion complète de la flotte',
-      image: '/src/assets/flotte_d\'entreprise.webp',
+      image: '/src/assets/flotte.png',
       color: 'accent',
     },
     {

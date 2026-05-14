@@ -13,6 +13,7 @@ export const AccountManagement = () => {
     adresse: '',
     jobtitle: '',
     departement: '',
+    telephone: '',
     profile_image: ''
   });
   const [saving, setSaving] = useState(false);
@@ -38,6 +39,7 @@ export const AccountManagement = () => {
               adresse: latestUser.adresse || '',
               jobtitle: latestUser.jobtitle || '',
               departement: latestUser.departement || '',
+              telephone: latestUser.telephone || '',
               profile_image: latestUser.profile_picture || ''
             });
             setProfileImagePreview(latestUser.profile_picture || null);
@@ -55,6 +57,7 @@ export const AccountManagement = () => {
             adresse: userData.adresse || '',
             jobtitle: userData.jobtitle || '',
             departement: userData.departement || '',
+            telephone: userData.telephone || '',
             profile_image: userData.profile_picture || ''
           });
           setProfileImagePreview(userData.profile_picture || null);
@@ -134,6 +137,7 @@ export const AccountManagement = () => {
         departement: formData.departement,
         adresse: formData.adresse,
         jobtitle: formData.jobtitle,
+        telephone: formData.telephone,
         profile_picture: profileImageUrl
       };
       
@@ -163,6 +167,7 @@ export const AccountManagement = () => {
       adresse: user.adresse || '',
       jobtitle: user.jobtitle || '',
       departement: user.departement || '',
+      telephone: user.telephone || '',
       profile_image: user.profile_picture || ''
     });
     setMessage('');

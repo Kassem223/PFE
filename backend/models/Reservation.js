@@ -55,23 +55,35 @@ const Reservation = {
   async getByUserId(userId) {
     const [rows] = await db.execute(`
       SELECT r.*, u.prenom, u.nom,
-        COALESCE(s.nom, v.nom, e.nom) as resource_nom,
-        COALESCE(s.image_url, v.image_url, e.image_url) as resource_image,
-        (SELECT GROUP_CONCAT(eq.nom, ', ') 
-         FROM reservation_equipments re2 
-         JOIN equipements eq ON re2.id_equipement = eq.id 
+        CASE
+          WHEN r.resource_type = 'salles'     THEN s.nom
+          WHEN r.resource_type = 'vehicules'  THEN v.nom
+          WHEN r.resource_type = 'equipement' THEN e.nom
+          ELSE COALESCE(s.nom, v.nom, e.nom)
+        END as resource_nom,
+        CASE
+          WHEN r.resource_type = 'salles'     THEN s.image_url
+          WHEN r.resource_type = 'vehicules'  THEN v.image_url
+          WHEN r.resource_type = 'equipement' THEN e.image_url
+          ELSE COALESCE(s.image_url, v.image_url, e.image_url)
+        END as resource_image,
+        (SELECT GROUP_CONCAT(eq.nom, ', ')
+         FROM reservation_equipments re2
+         JOIN equipements eq ON re2.id_equipement = eq.id
          WHERE re2.id_reservation = r.id_reservation) as additional_equipements,
-        CASE 
-          WHEN s.id IS NOT NULL THEN 'salles'
-          WHEN v.id IS NOT NULL THEN 'vehicules'
-          WHEN e.id IS NOT NULL THEN 'equipement'
-          ELSE 'unknown'
-        END as category_type
+        COALESCE(r.resource_type,
+          CASE
+            WHEN s.id IS NOT NULL THEN 'salles'
+            WHEN v.id IS NOT NULL THEN 'vehicules'
+            WHEN e.id IS NOT NULL THEN 'equipement'
+            ELSE 'unknown'
+          END
+        ) as category_type
       FROM reservations r
       JOIN users u ON r.id_user = u.id
-      LEFT JOIN salles s ON r.id_equipement = s.id
-      LEFT JOIN vehicules v ON r.id_equipement = v.id
-      LEFT JOIN equipements e ON r.id_equipement = e.id
+      LEFT JOIN salles s      ON r.id_equipement = s.id AND (r.resource_type = 'salles'     OR r.resource_type IS NULL)
+      LEFT JOIN vehicules v   ON r.id_equipement = v.id AND (r.resource_type = 'vehicules'  OR r.resource_type IS NULL)
+      LEFT JOIN equipements e ON r.id_equipement = e.id AND (r.resource_type = 'equipement' OR r.resource_type IS NULL)
       WHERE r.id_user = ?
       ORDER BY r.created_at DESC
     `, [userId]);

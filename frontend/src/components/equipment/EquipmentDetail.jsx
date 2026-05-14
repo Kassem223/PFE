@@ -499,6 +499,7 @@ export const EquipmentDetail = () => {
               selectedDate={selectedDate}
               selectedTime={selectedTime}
               selectedTimeEnd={selectedTimeEnd}
+              categoryType={getCategoryType(resource?.name)}
             />
           </div>
         )}

@@ -92,6 +92,81 @@ const SidebarComponent = () => {
 
 
 
+  useEffect(() => {
+
+    if (!user?.id) {
+
+      setUnreadNotifications(0);
+
+      return undefined;
+
+    }
+
+
+
+    let cancelled = false;
+
+
+
+    const fetchUnreadCount = async () => {
+
+      try {
+
+        const response = await axios.get(`http://localhost:3000/api/users/${user.id}/notifications`);
+
+        if (cancelled) return;
+
+        const list = Array.isArray(response.data) ? response.data : [];
+
+        setUnreadNotifications(list.length);
+
+      } catch (e) {
+
+        if (!cancelled) setUnreadNotifications(0);
+
+        // Silently ignore network errors (backend not running)
+        if (e?.code !== 'ERR_NETWORK' && e?.message !== 'Network Error') {
+          console.error('Failed to fetch notification count', e);
+        }
+
+      }
+
+    };
+
+
+
+    fetchUnreadCount();
+
+    const intervalId = setInterval(fetchUnreadCount, 60000);
+
+    const onRefresh = () => { fetchUnreadCount(); };
+
+    window.addEventListener('focus', onRefresh);
+
+    window.addEventListener('userUpdated', onRefresh);
+
+    window.addEventListener('notificationsUpdated', onRefresh);
+
+
+
+    return () => {
+
+      cancelled = true;
+
+      clearInterval(intervalId);
+
+      window.removeEventListener('focus', onRefresh);
+
+      window.removeEventListener('userUpdated', onRefresh);
+
+      window.removeEventListener('notificationsUpdated', onRefresh);
+
+    };
+
+  }, [user?.id, location.pathname]);
+
+
+
   const handleDisconnect = () => {
 
     // Clear user data from localStorage
@@ -250,7 +325,7 @@ const SidebarComponent = () => {
 
           </svg>
 
-          <span className="text-sm font-medium">Reservations</span>
+          <span className="text-sm font-medium">Mes Réservations</span>
 
           <div className="ml-auto w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-600 opacity-0 group-hover:opacity-100 transition-all duration-200"></div>
 
@@ -410,10 +485,11 @@ const SidebarComponent = () => {
 
           {unreadNotifications > 0 && (
 
-            <span className="ml-auto w-5 h-5 bg-gradient-to-br from-red-500 to-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse shadow-lg">
-
+            <span
+              className="ml-auto min-h-[1.25rem] min-w-[1.25rem] px-1.5 rounded-full text-xs font-bold flex items-center justify-center shrink-0 bg-gradient-to-br from-red-500 to-red-600 text-white shadow-md"
+              aria-label={`${unreadNotifications} notification${unreadNotifications !== 1 ? 's' : ''}`}
+            >
               {unreadNotifications > 99 ? '99+' : unreadNotifications}
-
             </span>
 
           )}
