@@ -10,6 +10,8 @@ import { Accueil } from './components/accueil/Accueil'
 import { Resources } from './components/resources/Resources'
 import { ResourceDetail } from './components/resources/ResourceDetail'
 import { EquipmentDetail } from './components/equipment/EquipmentDetail'
+import { CommanderEquipement } from './components/equipement/CommanderEquipement'
+import { MesCommandes } from './components/commandes/MesCommandes'
 import { CategoryPage } from './components/category/CategoryPage'
 import { Reservations } from './components/reservations/Reservations'
 import { ManageReservations } from './components/reservations/ManageReservations'
@@ -47,6 +49,8 @@ function App() {
         <Route path="/signup" element={<InvitedSignup />} />
         <Route path="/invitation-response" element={<InvitationResponse />} />
         <Route path="/accueil" element={<Layout><Accueil /></Layout>} />
+        <Route path="/commander-equipement" element={<Layout><CommanderEquipement /></Layout>} />
+        <Route path="/mes-commandes" element={<Layout><MesCommandes /></Layout>} />
         <Route path="/category/:type" element={<Layout><CategoryPage /></Layout>} />
         <Route path="/resources" element={<Layout><Resources /></Layout>} />
         <Route path="/resources/:id" element={<Layout><ResourceDetail /></Layout>} />
