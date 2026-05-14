@@ -457,6 +457,46 @@ app.post('/api/init-categories', async (req, res) => {
   }
 });
 
+// Diagnostic route
+app.get('/api/diagnostic', async (req, res) => {
+  try {
+    const db = require('./config/database');
+    const [rows] = await db.execute('SELECT 1 as val');
+    res.json({
+      status: 'OK',
+      database: process.env.DB_NAME || 'vektor_db',
+      db_user: process.env.DB_USER || 'root',
+      db_host: process.env.DB_HOST || 'localhost',
+      message: 'Database connection successful',
+      query_result: rows
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      database: process.env.DB_NAME || 'vektor_db',
+      db_user: process.env.DB_USER || 'root',
+      db_host: process.env.DB_HOST || 'localhost',
+      message: 'Database connection failed',
+      error_code: error.code,
+      error_message: error.message
+    });
+  }
+});
+
+// Debug users route
+app.get('/api/debug-users', async (req, res) => {
+  try {
+    const db = require('./config/database');
+    const [rows] = await db.execute('SELECT id, nom, prenom, email, role FROM users');
+    res.json({
+      success: true,
+      users: rows
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

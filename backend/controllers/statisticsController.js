@@ -219,9 +219,9 @@ const statisticsController = {
         `,
         
         equipementByStatus: `
-          SELECT status, COUNT(*) as count 
+          SELECT etat as status, COUNT(*) as count 
           FROM equipements 
-          GROUP BY status 
+          GROUP BY etat 
           ORDER BY count DESC
         `,
         
